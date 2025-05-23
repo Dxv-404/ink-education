@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INK | Login / Signup</title>
+
+  <!-- Import Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Import Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      background: #000;
+      position: relative;
+    }
+
+    /* Intro Loader */
+    #loader {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      transition: all 0.7s ease;
+    }
+
+    #changing-text::after {
+      content: "INK";
+      font-family: 'Press Start 2P', cursive;
+      font-size: 6rem;
+      color: white;
+      animation: changeLanguage 4s steps(7) forwards;
+    }
+
+    @keyframes changeLanguage {
+      0% { content: "INK"; }
+      14.28% { content: "इंक"; }
+      28.57% { content: "سیاہی"; }
+      42.85% { content: "மை"; }
+      57.14% { content: "മഷി"; }
+      71.42% { content: "কালি"; }
+      85.71% { content: "ಮಸಿ"; }
+      100% { content: "INK"; }
+    }
+
+    /* Main Container and Forms */
+    .background img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(0px);
+      position: absolute;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 1050px;
+      height: 800px;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .form-section {
+      width: 50%;
+      background: #F7F7F7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 2rem;
+      position: relative;
+      transition: 0.5s ease;
+    }
+
+    .form-section h1 {
+      font-family: 'Staatliches', sans-serif;
+      font-size: 6rem;
+      font-weight: 200;
+      letter-spacing: 2px;
+      color: #242422;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .small-text {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .small-text a {
+      color: #000;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #000;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #000;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .login-btn:hover {
+      background: #333;
+    }
+
+    .forgot-password {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .forgot-password a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .gif-section {
+      width: 50%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gif-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .login-form, .signup-form {
+      position: absolute;
+      width: 80%;
+      transition: all 0.5s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .signup-mode .login-form {
+      transform: translateX(-150%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .signup-mode .signup-form {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .signup-form {
+      transform: translateX(150%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Pixel Google Button */
+    .social-login {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .google-btn {
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      border: 3px solid #000000;
+      border-radius: 8px;
+      padding: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .google-btn:hover {
+      background-color: #f0f0f0;
+      border-color: #333;
+    }
+
+    .google-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Pixel Flash Messages */
+    .flash-wrapper {
+      position: absolute;
+      top: 70px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .pixel-flash {
+      width: 500px;
+      padding: 1rem;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      overflow: hidden;
+      animation: pixelFade 0.5s ease, pixelDisappear 5s forwards;
+    }
+
+    .pixel-flash.success {
+      background-color: #9A8A96;
+    }
+
+    .pixel-flash.error {
+      background-color: #999999;
+    }
+
+    .pixel-text {
+      font-family: 'Press Start 2P', cursive;
+      color: #fff;
+      font-size: 0.7rem;
+      margin-bottom: 10px;
+    }
+
+    .pixel-gif {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .verification-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    
+    .verification-content {
+      background-color: #F7F7F7;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    
+    .verification-content h1 {
+      font-family: 'Staatliches', sans-serif;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .pixel-text {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .error-message {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      color: #ff0000;
+      margin-top: 1rem;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+    
+    .resend-link {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+    
+    .resend-link a {
+      color: #333;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    @keyframes pixelFade {
+      0% { transform: translateY(-30px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pixelDisappear {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+    
+  </style>
+</head>
+
+<body>
+
+<!-- Intro Loader -->
+<div id="loader">
+  <span id="changing-text"></span>
+</div>
+
+<!-- Background Image -->
+<div class="background">
+  <img src="{{ url_for('static', filename='assets/background.gif') }}" alt="Background">
+</div>
+
+<!-- Flash Message Area -->
+<div id="flash-container" class="flash-wrapper"></div>
+
+<!-- Main Container -->
+<div class="container" id="container">
+
+  <div id="verificationModal" class="verification-modal">
+    <div class="verification-content">
+      <h1>VERIFY</h1>
+      <p class="pixel-text">Check your email for verification code</p>
+      <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
+      <button id="verifyBtn" class="login-btn">Verify</button>
+      <div id="verificationError" class="error-message"></div>
+      <div class="resend-link">
+        <a href="#" id="resendCodeBtn">Resend code</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Left Form Section -->
+  <div class="form-section">
+    <form id="loginForm" class="login-form">
+      <h1>WELCOME<br>BACK</h1>
+      <p class="small-text">Need an account? <a onclick="switchToSignup()">Sign Up</a></p>
+      <input type="text" placeholder="Username or email" id="login-email" required>
+      <input type="password" placeholder="Your password" id="login-password" required>
+      <button type="submit" class="login-btn">Log In</button>
+
+      <!-- Pixel Google Button -->
+      <div class="social-login">
+        <button class="google-btn" onclick="handleGoogleLogin()" type="button">
+          <img src="{{ url_for('static', filename='assets/google_icon.png') }}" alt="Google Logo" class="google-icon">
+        </button>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#">Forgot password?</a>
+      </div>
+    </form>
+
+    <form id="signupForm" class="signup-form">
+      <h1>CREATE<br>ACCOUNT</h1>
+      <p class="small-text">Already have an account? <a onclick="switchToLogin()">Log In</a></p>
+      <input type="email" placeholder="Your email" id="signup-email" required>
+      <input type="text" placeholder="Your username" id="signup-username" required>
+      <input type="password" placeholder="Your password" id="signup-password" required>
+      <input type="password" placeholder="Confirm password" id="signup-confirm-password" required>
+      <button type="submit" class="login-btn">Sign Up</button>
+    </form>
+  </div>
+
+  <!-- Right GIF Section -->
+  <div class="gif-section">
+    <img src="{{ url_for('static', filename='assets/background.gif') }}" alt="INK Animation">
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script>
+  const container = document.getElementById('container');
+
+  function switchToSignup() {
+    container.classList.add('signup-mode');
+  }
+
+  function switchToLogin() {
+    container.classList.remove('signup-mode');
+  }
+
+  function showFlashMessage(message, type) {
+  const flashContainer = document.getElementById('flash-container');
+  
+  // Clear any existing flash messages
+  flashContainer.innerHTML = '';
+  
+  const flashDiv = document.createElement('div');
+  flashDiv.className = `pixel-flash ${type}`;
+  const gifPath = type === 'success'
+    ? "{{ url_for('static', filename='assets/success.gif') }}"
+    : "{{ url_for('static', filename='assets/error.gif') }}";
+
+  flashDiv.innerHTML = `
+    <div class="pixel-text">${message}</div>
+    <img src="${gifPath}" class="pixel-gif">
+  `;
+  flashContainer.appendChild(flashDiv);
+
+  setTimeout(() => {
+    flashDiv.remove();
+  }, 3000);
+}
+
+
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEN8QcSiao1sTFX1-8uyViDZOiCkNGyo8",
+    authDomain: "ink-education-ce9a9.firebaseapp.com",
+    projectId: "ink-education-ce9a9",
+    storageBucket: "ink-education-ce9a9.appspot.com",
+    messagingSenderId: "586546230544",
+    appId: "1:586546230544:web:690d451105f1a10e416195",
+    measurementId: "G-2S2CP72FSV"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  // Handle Google Login
+  // Handle Google Login
+  async function handleGoogleLogin() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+      const result = await firebase.auth().signInWithPopup(provider);
+      const idToken = await result.user.getIdToken();
+      const email = result.user.email;
+      const displayName = result.user.displayName;
+
+      const response = await fetch('/auth/firebase-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, email, displayName })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showFlashMessage('Login successful!', 'success');
+        setTimeout(() => {
+          // Use server-provided redirect path or fallback to dashboard
+          window.location.href = data.redirect || '/dashboard';
+        }, 2500);
+      } else {
+        showFlashMessage(data.message, 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showFlashMessage('Error during Google Sign-In.', 'error');
+    }
+  }
+
+  // Handle Login Form (AJAX)
+// Handle Login Form (AJAX)
+// Update login form handler
+// Update login form handler
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const usernameOrEmail = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!usernameOrEmail || !password) {
+        showFlashMessage('Please enter both email/username and password', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: usernameOrEmail, password })
+        });
+
+        const data = await response.json();
+        console.log("Login response:", data); // Debug
+
+        if (data.success) {
+            if (data.verify_required) {
+                console.log("Verification required, showing modal"); // Debug
+                // Clear verification code input
+                if (document.getElementById('verificationCode')) {
+                    document.getElementById('verificationCode').value = '';
+                }
+                
+                // Set pending email
+                pendingEmail = data.email || usernameOrEmail;
+                
+                // Show verification modal
+                const verificationModal = document.getElementById('verificationModal');
+                verificationModal.style.display = 'flex';
+                
+                // Focus on code input
+                setTimeout(() => {
+                    document.getElementById('verificationCode').focus();
+                }, 100);
+                
+                showFlashMessage('Verification code sent to your email', 'success');
+            } else {
+                console.log("No verification required, redirecting"); // Debug
+                // Normal login success flow
+                showFlashMessage('Login successful!', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/dashboard';
+                }, 2500);
+            }
+        } else {
+            showFlashMessage(data.message, 'error');
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        showFlashMessage('Network or server error. Please try again.', 'error');
+    }
+});
+
+  // Handle Signup Form (AJAX)
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    const username = document.getElementById('signup-username').value;
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+    const response = await fetch('/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, username, password, confirm_password: confirmPassword })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showFlashMessage('Signup successful! Please login.', 'success');
+      setTimeout(() => {
+        window.location.reload(); // or move to login form automatically
+      }, 2500);
+    } else {
+      showFlashMessage(data.message, 'error');
+    }
+  });
+
+  // Loader Animation After Intro
+  window.addEventListener('load', function() {
+    const loader = document.getElementById('loader');
+    setTimeout(() => {
+      loader.style.transform = 'scale(0)';
+      loader.style.opacity = '0';
+      loader.style.visibility = 'hidden';
+      container.style.opacity = '1';
+    }, 4500);
+  });
+
+  // Verification-related variables
+let pendingEmail = '';
+
+// Update login form handler
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const usernameOrEmail = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: usernameOrEmail, password })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        if (data.verify_required) {
+            // Show verification modal
+            pendingEmail = data.email || usernameOrEmail;
+            document.getElementById('verificationModal').style.display = 'flex';
+            document.getElementById('verificationCode').focus();
+            showFlashMessage('Verification code sent to your email', 'success');
+        } else {
+            // Normal login success flow
+            showFlashMessage('Login successful!', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect || '/dashboard';
+            }, 2500);
+        }
+    } else {
+        showFlashMessage(data.message, 'error');
+    }
+});
+
+// Handle verification submission
+// Handle verification submission
+document.getElementById('verifyBtn').addEventListener('click', async () => {
+    const code = document.getElementById('verificationCode').value.trim();
+    const errorElement = document.getElementById('verificationError');
+    
+    if (!code || code.length !== 6) {
+        errorElement.textContent = 'Please enter a valid 6-digit code';
+        return;
+    }
+    
+    errorElement.textContent = '';
+    console.log(`Submitting verification for email: ${pendingEmail}, code: ${code}`);
+    
+    const response = await fetch('/verify-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            email: pendingEmail,
+            code: code 
+        })
+    });
+    
+    const data = await response.json();
+    console.log("Verification response:", data);
+    
+    if (data.success) {
+        document.getElementById('verificationModal').style.display = 'none';
+        showFlashMessage('Verification successful!', 'success');
+        setTimeout(() => {
+            window.location.href = data.redirect || '/dashboard';
+        }, 1500);
+    } else {
+        errorElement.textContent = data.message;
+    }
+});
+
+// Allow Enter key to trigger verification
+document.getElementById('verificationCode').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('verifyBtn').click();
+    }
+});
+
+// Resend verification code
+document.getElementById('resendCodeBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    if (!pendingEmail) {
+        showFlashMessage('Session expired. Please login again.', 'error');
+        return;
+    }
+    
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            email: pendingEmail,
+            password: document.getElementById('login-password').value
+        })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.verify_required) {
+        showFlashMessage('New verification code sent', 'success');
+    } else {
+        showFlashMessage('Failed to resend code. Please try logging in again.', 'error');
+    }
+});
+</script>
+</body>
+</html>

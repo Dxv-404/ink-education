@@ -1,0 +1,4060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK | Knowledge Bounties</title>
+    
+    <!-- Import Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    
+    <!-- Rich text editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <!-- DOMPurify for HTML sanitization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.4/purify.min.js"></script>
+    
+    <style>
+        /* Base Styles */
+        :root {
+            --ink-black: #000000;
+            --ink-white: #ffffff;
+            --ink-gray-light: #f0f0f0;
+            --ink-gray-dark: #333333;
+            --ink-purple: #7b3eab;
+            --ink-blue: #3f51b5;
+            --ink-green: #4caf50;
+            --ink-amber: #ffc107;
+            --ink-orange: #ff5722;
+            --ink-red: #f44336;
+            --ink-teal: #009688;
+            --pixel-size: 8px;
+            --menu-width: 250px;
+            --menu-collapsed-width: 60px;
+            --menu-transition: 0.3s ease;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background-color: var(--ink-black);
+            color: var(--ink-white);
+            overflow-x: hidden;
+            min-height: 100vh;
+            image-rendering: pixelated;
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            height: var(--header-height);
+            border-bottom: 2px solid var(--ink-white);
+            position: relative;
+            background-color: var(--ink-black);
+            z-index: 100;
+        }
+
+        .ink-title {
+            font-family: 'Staatliches', cursive;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            margin-left: 80px;
+        }
+
+        .user-info {
+            margin-left: auto;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-btn, .dashboard-btn {
+            padding: 0.5rem 1rem;
+            background: var(--ink-white);
+            color: var(--ink-black);
+            text-decoration: none;
+            font-size: 0.7rem;
+            border-radius: 0;
+            cursor: pointer;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        /* Pixel Heart */
+        .pixel-heart {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 2px;
+            z-index: 10;
+        }
+
+        .heart-pixel {
+            width: 100%;
+            height: 100%;
+            background: var(--ink-white);
+            animation: pixel-pulse 2s infinite;
+        }
+
+        @keyframes pixel-pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Main Content Styles */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--menu-width);
+            background-color: var(--ink-black);
+            border-right: 2px solid var(--ink-white);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--ink-gray-dark);
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: var(--ink-white);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu-item.active {
+            background-color: var(--ink-purple);
+        }
+
+        .sidebar-menu-item i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .coin-balance {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            margin-bottom: 1rem;
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .coin-icon {
+            margin-right: 0.5rem;
+            color: var(--ink-amber);
+        }
+
+        /* Custom Dropdown Styles */
+        .custom-dropdown {
+            position: relative;
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+
+        .dropdown-selected {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: var(--ink-black);
+            border: 1px solid var(--ink-gray-dark);
+            color: var(--ink-white);
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            justify-content: space-between;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .dropdown-selected i.dropdown-icon {
+            margin-left: 0.5rem;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--ink-black);
+            border: 1px solid var(--ink-gray-dark);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .dropdown-option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-option i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-search {
+            padding: 0.5rem;
+            width: 100%;
+            background-color: var(--ink-gray-dark);
+            border: none;
+            color: var(--ink-white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+        }
+
+        .dropdown-search:focus {
+            outline: none;
+        }
+
+        .dropdown-create {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            cursor: pointer;
+        }
+
+        .dropdown-create:hover {
+            background-color: #6a32a0;
+        }
+
+        .dropdown-create i {
+            margin-right: 0.5rem;
+        }
+
+        .dropdown-open {
+            display: block;
+        }
+
+        /* Popular Tags Section */
+        .popular-tags {
+            margin-top: 1rem;
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag-cloud-item {
+            padding: 0.3rem 0.5rem;
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+            font-size: 0.55rem;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 2px) 0, 
+                100% 2px, 
+                100% 100%, 
+                2px 100%, 
+                0 calc(100% - 2px)
+            );
+        }
+
+        .tag-cloud-item:hover {
+            background-color: var(--ink-purple);
+        }
+
+        .tag-cloud-item .tag-count {
+            opacity: 0.7;
+            margin-left: 3px;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex: 1;
+            padding: 1.5rem;
+            background-color: var(--ink-black);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.65rem;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            border: none;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+        
+        .filter-select:focus, .search-input:focus {
+            outline: none;
+        }
+
+        .search-input {
+            width: 250px;
+        }
+
+        /* Create Bounty Button */
+        .create-btn {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .create-btn:hover {
+            background-color: #6a32a0;
+        }
+
+        /* Interests Header Section */
+        .interests-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .interest-tag {
+            padding: 0.4rem 0.8rem;
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            font-size: 0.65rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        /* Bounty Cards */
+        .bounty-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            min-height: 200px;
+            transition: opacity 0.3s ease;
+        }
+
+        .bounty-card {
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            border-radius: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, opacity 0.3s;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .bounty-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .bounty-header {
+            padding: 1rem;
+            background-color: var(--ink-gray-light);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .bounty-title {
+            font-size: 0.8rem;
+            color: var(--ink-black);
+            /* Ensure the title wraps instead of overflowing */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .bounty-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.6rem;
+        }
+
+        .bounty-category {
+            display: inline-block;
+            padding: 0.2rem 0.4rem;
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            font-size: 0.55rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 3px) 0, 
+                100% 3px, 
+                100% 100%, 
+                3px 100%, 
+                0 calc(100% - 3px)
+            );
+        }
+
+        .bounty-reward {
+            color: var(--ink-amber);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .bounty-body {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .bounty-description {
+            font-size: 0.65rem;
+            color: var(--ink-gray-dark);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .bounty-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-gray-light);
+            font-size: 0.6rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .bounty-stats {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .bounty-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .bounty-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+
+        .bounty-tag {
+            display: inline-block;
+            padding: 0.15rem 0.3rem;
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+            font-size: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 2px) 0, 
+                100% 2px, 
+                100% 100%, 
+                2px 100%, 
+                0 calc(100% - 2px)
+            );
+        }
+
+        .bounty-status {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.55rem;
+        }
+
+        .status-open {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .status-closed {
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+        }
+
+        /* Challenge Card */
+        .challenge-card {
+            background-color: var(--ink-orange);
+            color: var(--ink-white);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .challenge-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .challenge-title {
+            font-size: 0.8rem;
+        }
+
+        .challenge-description {
+            font-size: 0.65rem;
+            max-width: 600px;
+        }
+
+        .challenge-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.6rem;
+        }
+
+        .challenge-bonus {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--ink-amber);
+        }
+
+        .challenge-time {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .challenge-view-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .leaderboard-title {
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--ink-gray-dark);
+            padding-bottom: 0.5rem;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: var(--ink-gray-light);
+        }
+
+        .leaderboard-rank {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .leaderboard-user {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .leaderboard-username {
+            font-size: 0.65rem;
+        }
+
+        .leaderboard-score {
+            font-size: 0.65rem;
+            color: var(--ink-amber);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Badge Section */
+        .badges-section {
+            margin-top: 1.5rem;
+        }
+
+        .badges-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .badges-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            width: 80px;
+        }
+
+        .badge-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--ink-gray-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-white);
+            font-size: 1rem;
+        }
+
+        .badge-icon.earned {
+            background-color: var(--ink-purple);
+        }
+
+        .badge-name {
+            font-size: 0.55rem;
+            text-align: center;
+        }
+
+        /* Loading Animation */
+        .loading {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .loading-dots span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--ink-white);
+            margin: 0 3px;
+            border-radius: 0;
+            animation: loading 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes loading {
+            0%, 80%, 100% { 
+                transform: scale(0);
+            } 
+            40% { 
+                transform: scale(1.0);
+            }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .page-btn:hover:not(.active):not(.disabled) {
+            transform: translateY(-2px);
+            background-color: var(--ink-gray-light);
+        }
+
+        .page-btn.active {
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            pointer-events: none;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Fade Animation */
+        .fade-out {
+            opacity: 0;
+        }
+
+        .fade-in {
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s linear 0.3s, opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+            transition-delay: 0s;
+        }
+
+        .modal-container {
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            position: relative;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--ink-black);
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--ink-black);
+        }
+
+        .form-row {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--ink-gray-dark);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--ink-purple);
+        }
+
+        .form-help {
+            margin-top: 0.3rem;
+            font-size: 0.55rem;
+            color: var(--ink-gray-dark);
+        }
+
+        .complexity-select {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .complexity-option {
+            padding: 0.5rem;
+            border: 2px solid var(--ink-gray-dark);
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            font-size: 0.65rem;
+        }
+
+        .complexity-option.selected {
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            border-color: var(--ink-purple);
+        }
+
+        .tag-input-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag-input {
+            flex: 1;
+            padding: 0.7rem;
+            border: 2px solid var(--ink-gray-dark);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+        }
+
+        .tag-add-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tags-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.5rem;
+            background-color: var(--ink-gray-light);
+            font-size: 0.6rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: var(--ink-red);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .cancel-btn, .submit-btn {
+            padding: 0.7rem 1.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .cancel-btn {
+            background-color: var(--ink-gray-light);
+            color: var(--ink-black);
+        }
+
+        .submit-btn {
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+        }
+
+        .submit-btn:hover {
+            background-color: #6a32a0;
+        }
+
+        .reward-preview {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background-color: var(--ink-gray-light);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .reward-value {
+            color: var(--ink-amber);
+            font-weight: bold;
+        }
+
+        .editor-container {
+            height: 200px;
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--ink-gray-dark);
+        }
+
+        /* Rich Text Editor Customization */
+        .ql-toolbar.ql-snow, .ql-container.ql-snow {
+            border: none !important;
+        }
+
+        .ql-container {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 14px !important;
+        }
+
+        /* Detail View Modal */
+        .bounty-detail-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .bounty-detail-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .bounty-detail-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .bounty-creator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.65rem;
+        }
+
+        .bounty-detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .bounty-detail-description {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .bounty-detail-description img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .bounty-detail-description pre {
+            background-color: #f6f8fa;
+            padding: 1rem;
+            border-radius: 3px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .bounty-detail-description code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Code block styling like Stack Overflow */
+        pre.ql-syntax, .ql-code-block-container {
+            background-color: #f6f8fa !important;
+            padding: 16px !important;
+            border-radius: 3px !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+            font-size: 14px !important;
+            line-height: 1.45 !important;
+            color: #333 !important;
+            margin: 1em 0 !important;
+            overflow-x: auto !important;
+        }
+
+        .ql-code-block {
+            background: none !important;
+            padding: 0 !important;
+            color: #333 !important;
+        }
+
+        /* Image upload section */
+        .image-upload-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 2px dashed var(--ink-gray-dark);
+            text-align: center;
+        }
+
+        .image-upload-label {
+            display: block;
+            margin-bottom: 1rem;
+            font-size: 0.7rem;
+        }
+
+        .image-upload-input {
+            display: none;
+        }
+
+        .image-upload-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            position: relative;
+            display: none;
+        }
+
+        .image-preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid var(--ink-gray-dark);
+        }
+
+        .image-remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .response-section {
+            margin-top: 2rem;
+            border-top: 2px solid var(--ink-gray-dark);
+            padding-top: 1rem;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .response-title {
+            font-size: 0.8rem;
+        }
+
+        .response-count {
+            font-size: 0.65rem;
+        }
+
+        .response-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .response-item {
+            background-color: var(--ink-gray-light);
+            padding: 1rem;
+            border-left: 4px solid var(--ink-gray-dark);
+            position: relative;
+        }
+
+        .response-item.pinned {
+            border-left-color: var(--ink-amber);
+        }
+
+        .response-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .response-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.65rem;
+        }
+
+        .response-date {
+            font-size: 0.6rem;
+            color: var(--ink-gray-dark);
+        }
+
+        .response-content {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .response-content pre {
+            background-color: var(--ink-white);
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .response-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .response-votes {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .vote-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: none;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--ink-black);
+        }
+
+        .vote-btn.upvoted {
+            color: var(--ink-green);
+        }
+
+        .vote-btn.downvoted {
+            color: var(--ink-red);
+        }
+
+        .pin-btn {
+            padding: 0.4rem 0.8rem;
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 4px) 0, 
+                100% 4px, 
+                100% 100%, 
+                4px 100%, 
+                0 calc(100% - 4px)
+            );
+        }
+
+        .pinned-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 0.3rem 0.5rem;
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+            font-size: 0.55rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 3px) 0, 
+                100% 3px, 
+                100% 100%, 
+                3px 100%, 
+                0 calc(100% - 3px)
+            );
+        }
+
+        /* No Results Style */
+        .no-results {
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--ink-white);
+        }
+
+        .no-results i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--ink-gray-dark);
+        }
+
+        /* Countdown Timer */
+        .auto-pin-timer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-gray-light);
+            margin-bottom: 1rem;
+        }
+
+        .timer-label {
+            font-size: 0.65rem;
+        }
+
+        .timer-value {
+            font-size: 0.7rem;
+            color: var(--ink-red);
+        }
+
+        /* Coin animation */
+        @keyframes coin-fly {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.5) rotate(360deg) translate(50px, -100px);
+                opacity: 0;
+            }
+        }
+
+        .coin-animation {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            background-color: var(--ink-amber);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-black);
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+            animation: coin-fly 1s forwards;
+        }
+
+        /* Quest Progress */
+        .quest-progress {
+            background-color: var(--ink-blue);
+            color: var(--ink-white);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .quest-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-description {
+            font-size: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-container {
+            height: 12px;
+            background-color: rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.5rem;
+            width: 100%;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 3px) 0, 
+                100% 3px, 
+                100% 100%, 
+                3px 100%, 
+                0 calc(100% - 3px)
+            );
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--ink-white);
+        }
+
+        .quest-steps {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+        }
+
+        .quest-reward {
+            margin-top: 0.5rem;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--ink-amber);
+        }
+
+        /* Feedback/notification element */
+        .feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: translateX(150%);
+            transition: transform 0.3s;
+        }
+
+        .feedback.show {
+            transform: translateX(0);
+        }
+
+        .feedback.success {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .feedback.error {
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+        }
+
+        .feedback.warning {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        /* Filter reset button */
+        .filter-reset {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.6rem;
+            color: var(--ink-red);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .filter-reset:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid var(--ink-white);
+                padding: 1rem;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .create-btn {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .bounty-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .challenge-card {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .challenge-stats {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ink-title {
+                font-size: 2rem;
+                margin-left: 60px;
+            }
+            
+            .user-info {
+                font-size: 0.6rem;
+            }
+            
+            .bounty-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-container {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            .sidebar-menu-item {
+                font-size: 0.6rem;
+            }
+            
+            .coin-balance {
+                font-size: 0.6rem;
+            }
+            
+            .leaderboard-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .leaderboard-score {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="pixel-heart" id="pixelHeart"></div>
+        <h1 class="ink-title">INK</h1>
+        <div class="user-info">
+            <span id="username">{{ user.username }}</span>
+            <a href="/dashboard" class="dashboard-btn">Dashboard</a>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="coin-balance" id="coinBalance">
+                <i class="fas fa-coins coin-icon"></i>
+                <span>Balance: <span id="coinAmount">0</span> coins</span>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Feeds</h3>
+                <div class="sidebar-menu-item active" data-filter="all">
+                    <i class="fas fa-globe"></i> All Bounties
+                </div>
+                <div class="sidebar-menu-item" data-filter="interests">
+                    <i class="fas fa-star"></i> Your Interests
+                </div>
+                <div class="sidebar-menu-item" data-filter="department">
+                    <i class="fas fa-graduation-cap"></i> Your Department
+                </div>
+                <div class="sidebar-menu-item" data-filter="created">
+                    <i class="fas fa-file-alt"></i> Created By You
+                </div>
+                <div class="sidebar-menu-item" data-filter="solved">
+                    <i class="fas fa-check-circle"></i> Solved By You
+                </div>
+                
+                <!-- Filter reset button -->
+                <button class="filter-reset" id="resetFilters" style="display: none;">
+                    <i class="fas fa-times"></i> Clear Filter
+                </button>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Categories</h3>
+                <div class="custom-dropdown" id="categorySidebarDropdown">
+                    <div class="dropdown-selected">
+                        <span>Select Category</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="dropdown-options">
+                        <input type="text" class="dropdown-search" placeholder="Search categories...">
+                        <!-- Categories will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Complexity</h3>
+                <div class="sidebar-menu-item" data-complexity="1">
+                    <i class="fas fa-star"></i> Level 1 (Beginner)
+                </div>
+                <div class="sidebar-menu-item" data-complexity="2">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i> Level 2
+                </div>
+                <div class="sidebar-menu-item" data-complexity="3">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 3
+                </div>
+                <div class="sidebar-menu-item" data-complexity="4">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 4
+                </div>
+                <div class="sidebar-menu-item" data-complexity="5">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 5 (Expert)
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Status</h3>
+                <div class="sidebar-menu-item" data-status="open">
+                    <i class="fas fa-lock-open"></i> Open Bounties
+                </div>
+                <div class="sidebar-menu-item" data-status="closed">
+                    <i class="fas fa-lock"></i> Closed Bounties
+                </div>
+            </div>
+            
+            <!-- Popular Tags Section -->
+            <div class="sidebar-section popular-tags">
+                <h3 class="sidebar-title">Popular Tags</h3>
+                <div class="tag-cloud" id="popularTags">
+                    <!-- Popular tags will be loaded dynamically -->
+                </div>
+            </div>
+            
+            <div class="badges-section">
+                <h3 class="badges-title">Your Badges</h3>
+                <div class="badges-list" id="badgesList">
+                    <!-- Badges will be loaded dynamically -->
+                    <div class="badge-item">
+                        <div class="badge-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="badge-name">CS Novice</div>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon earned">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                        <div class="badge-name">Helper</div>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="badge-name">Problem Solver</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Sort By:</span>
+                    <select class="filter-select" id="sortSelect">
+                        <option value="latest">Latest First</option>
+                        <option value="reward">Highest Reward</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="relevance">Relevance to You</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search bounties...">
+                </div>
+                
+                <button class="create-btn" id="createBountyBtn">
+                    <i class="fas fa-plus"></i> Create Bounty
+                </button>
+            </div>
+            
+            <!-- Active Challenge Section (only shown when a challenge is active) -->
+            <div class="challenge-card" id="activeChallenge">
+                <div class="challenge-info">
+                    <h3 class="challenge-title">Algorithm Week Challenge</h3>
+                    <p class="challenge-description">Solve algorithm-related bounties this week for bonus rewards. Participate in this university-wide challenge and showcase your problem-solving skills!</p>
+                    <div class="challenge-stats">
+                        <div class="challenge-bonus">
+                            <i class="fas fa-coins"></i> 50 Bonus Coins Per Solve
+                        </div>
+                        <div class="challenge-time">
+                            <i class="fas fa-clock"></i> <span id="challengeTimer">6 days 12 hours left</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="challenge-view-btn">View Challenge</button>
+            </div>
+            
+            <!-- Quest Progress (shown when user has an active quest) -->
+            <div class="quest-progress" id="activeQuest">
+                <h3 class="quest-title">Machine Learning Fundamentals Quest</h3>
+                <p class="quest-description">Master the basics of machine learning through a series of bounties.</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 33%;"></div>
+                </div>
+                <div class="quest-steps">
+                    <span>Step 1/3 completed</span>
+                    <span>Next: Regression Analysis</span>
+                </div>
+                <div class="quest-reward">
+                    <i class="fas fa-coins"></i> 500 Coins upon completion
+                </div>
+            </div>
+            
+            <!-- Interests Header (will be shown when interests filter is active) -->
+            <div class="interests-header" id="interestsHeader" style="display: none;">
+                <!-- Interest tags will be loaded dynamically -->
+            </div>
+            
+            <!-- Bounty Container -->
+            <div class="bounty-container" id="bountyContainer">
+                <!-- Bounties will be loaded dynamically -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer">
+                <!-- Pagination will be generated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Bounty Modal -->
+    <div class="modal-overlay" id="createBountyModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Knowledge Bounty</h2>
+                <button class="modal-close" id="closeCreateModal">&times;</button>
+            </div>
+            
+            <form id="createBountyForm">
+                <div class="form-row">
+                    <label class="form-label" for="bountyTitle">Title</label>
+                    <input type="text" id="bountyTitle" class="form-input" placeholder="Enter a clear, concise question" required>
+                    <div class="form-help">Be specific about what you're asking.</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label" for="bountyDescription">Description</label>
+                    <div id="descriptionEditor" class="editor-container"></div>
+                    <div class="form-help">Provide details, context, and what you've tried so far.</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Add Image (Optional)</label>
+                    <div class="image-upload-section">
+                        <label for="bountyImage" class="image-upload-label">Upload an image related to your question</label>
+                        <input type="file" id="bountyImage" class="image-upload-input" accept="image/*">
+                        <button type="button" id="imageUploadBtn" class="image-upload-btn">Choose Image</button>
+                        
+                        <div class="image-preview" id="imagePreview">
+                            <img src="" alt="Preview" class="image-preview-img" id="previewImg">
+                            <button type="button" class="image-remove-btn" id="removeImageBtn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label" for="bountyCategory">Category</label>
+                    <div class="custom-dropdown" id="createBountyCategoryDropdown">
+                        <div class="dropdown-selected">
+                            <span>Select Category</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </div>
+                        <div class="dropdown-options">
+                            <input type="text" class="dropdown-search" placeholder="Search categories...">
+                            <!-- Categories will be populated dynamically -->
+                            <div class="dropdown-create">
+                                <i class="fas fa-plus"></i> Create New Category
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Complexity Level</label>
+                    <div class="complexity-select">
+                        <div class="complexity-option" data-complexity="1">Level 1</div>
+                        <div class="complexity-option" data-complexity="2">Level 2</div>
+                        <div class="complexity-option" data-complexity="3">Level 3</div>
+                        <div class="complexity-option" data-complexity="4">Level 4</div>
+                        <div class="complexity-option" data-complexity="5">Level 5</div>
+                    </div>
+                    <div class="form-help">Higher complexity = higher reward but requires more expertise.</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Tags</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag">
+                        <button type="button" id="addTagBtn" class="tag-add-btn">Add</button>
+                    </div>
+                    <div class="tags-preview" id="tagsPreview"></div>
+                    <div class="form-help">Add up to 5 tags to help categorize your bounty.</div>
+                </div>
+                
+                <div class="reward-preview">
+                    <i class="fas fa-coins" style="color: var(--ink-amber);"></i>
+                    <span>Estimated Reward: <span class="reward-value" id="rewardValue">0</span> coins</span>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" id="cancelCreateBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Create Bounty</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Bounty Detail Modal -->
+    <div class="modal-overlay" id="bountyDetailModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Bounty Details</h2>
+                <button class="modal-close" id="closeDetailModal">&times;</button>
+            </div>
+            
+            <div id="bountyDetailContent">
+                <!-- Content will be dynamically loaded -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="response-section">
+                <div class="response-header">
+                    <h3 class="response-title">Responses</h3>
+                    <span class="response-count" id="responseCount">0 responses</span>
+                </div>
+                
+                <div class="response-list" id="responseList">
+                    <!-- Responses will be loaded dynamically -->
+                </div>
+                
+                <div id="responseFormSection">
+                    <div class="form-row">
+                        <label class="form-label">Your Response</label>
+                        <div id="responseEditor" class="editor-container"></div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="submit-btn" id="submitResponseBtn">Submit Response</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Category Modal -->
+    <div class="modal-overlay" id="createCategoryModal">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Category</h2>
+                <button class="modal-close" id="closeCategoryModal">&times;</button>
+            </div>
+            
+            <form id="createCategoryForm">
+                <div class="form-row">
+                    <label class="form-label" for="categoryName">Category Name</label>
+                    <input type="text" id="categoryName" class="form-input" placeholder="Enter category name" required>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Select Icon</label>
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                        <div class="complexity-option icon-option" data-icon="fa-laptop-code">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-chart-line">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-balance-scale">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-heartbeat">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-cogs">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-atom">
+                            <i class="fas fa-atom"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-book">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-paint-brush">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-calculator">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-flask">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-globe">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="complexity-option icon-option" data-icon="fa-brain">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" id="cancelCategoryBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Feedback notification -->
+    <div class="feedback" id="feedbackNotification">
+        <i class="fas fa-check-circle"></i>
+        <span id="feedbackMessage">Success message here</span>
+    </div>
+    
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let currentUser = null;
+            let bounties = [];
+            let challenges = [];
+            let quests = [];
+            let badges = [];
+            let responses = {};
+            let popularTags = [];
+            let categories = [];
+            
+            // DOM Elements
+            const pixelHeart = document.getElementById('pixelHeart');
+            const usernameElement = document.getElementById('username');
+            const coinBalanceElement = document.getElementById('coinAmount');
+            const bountyContainer = document.getElementById('bountyContainer');
+            const interestsHeader = document.getElementById('interestsHeader');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const createBountyBtn = document.getElementById('createBountyBtn');
+            const createBountyModal = document.getElementById('createBountyModal');
+            const closeCreateModal = document.getElementById('closeCreateModal');
+            const cancelCreateBtn = document.getElementById('cancelCreateBtn');
+            const createBountyForm = document.getElementById('createBountyForm');
+            const bountyDetailModal = document.getElementById('bountyDetailModal');
+            const closeDetailModal = document.getElementById('closeDetailModal');
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+            const addTagBtn = document.getElementById('addTagBtn');
+            const tagInput = document.getElementById('tagInput');
+            const tagsPreview = document.getElementById('tagsPreview');
+            const bountyDetailContent = document.getElementById('bountyDetailContent');
+            const responseList = document.getElementById('responseList');
+            const responseFormSection = document.getElementById('responseFormSection');
+            const submitResponseBtn = document.getElementById('submitResponseBtn');
+            const feedbackNotification = document.getElementById('feedbackNotification');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            const badgesList = document.getElementById('badgesList');
+            const challengeSection = document.getElementById('activeChallenge');
+            const questSection = document.getElementById('activeQuest');
+            const popularTagsContainer = document.getElementById('popularTags');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const imageUploadBtn = document.getElementById('imageUploadBtn');
+            const bountyImage = document.getElementById('bountyImage');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+            
+            // Category Dropdown Elements
+            const categorySidebarDropdown = document.getElementById('categorySidebarDropdown');
+            const createBountyCategoryDropdown = document.getElementById('createBountyCategoryDropdown');
+            const createCategoryModal = document.getElementById('createCategoryModal');
+            const closeCategoryModal = document.getElementById('closeCategoryModal');
+            const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
+            const createCategoryForm = document.getElementById('createCategoryForm');
+            
+            // Filter/sort state
+            let currentFilter = 'all';
+            let currentCategory = null;
+            let currentComplexity = null;
+            let currentStatus = null;
+            let currentSort = 'latest';
+            let currentSearch = '';
+            let currentPage = 1;
+            let itemsPerPage = 12;
+            let activeFilterType = null;
+            
+            // Form state
+            let selectedComplexity = null;
+            let currentTags = [];
+            let currentBounty = null;
+            let currentResponseId = null;
+            let currentPinnedResponse = null;
+            let autoPinTimer = null;
+            let uploadedImage = null;
+            let selectedCategoryId = null;
+            let selectedCategoryIcon = null;
+            let selectedCreateCategoryIcon = null;
+            
+            // Initialize Quill editors with custom formats for code
+            const toolbarOptions = [
+                [{ 'header': [1, 2, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['code-block', 'link'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['clean']
+            ];
+            
+            const descriptionEditor = new Quill('#descriptionEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions,
+                    syntax: true
+                },
+                placeholder: 'Describe your question or problem in detail...'
+            });
+            
+            const responseEditor = new Quill('#responseEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions,
+                    syntax: true
+                },
+                placeholder: 'Write your response here...'
+            });
+            
+            // Create Pixel Heart
+            const createPixelHeart = () => {
+                const heartPattern = [
+                    [0, 1, 0, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 1, 0, 0]
+                ];
+                
+                heartPattern.forEach((row, rowIndex) => {
+                    row.forEach((col, colIndex) => {
+                        if (col) {
+                            const div = document.createElement('div');
+                            div.className = 'heart-pixel';
+                            div.style.gridRow = rowIndex + 1;
+                            div.style.gridColumn = colIndex + 1;
+                            div.style.setProperty('--index', rowIndex + colIndex);
+                            pixelHeart.appendChild(div);
+                        }
+                    });
+                });
+            };
+            
+            // Initialize pixel heart
+            createPixelHeart();
+            
+            // Show feedback notification
+            const showFeedback = (message, type = 'success') => {
+                feedbackMessage.textContent = message;
+                feedbackNotification.className = `feedback ${type}`;
+                
+                // Add show class to trigger animation
+                setTimeout(() => {
+                    feedbackNotification.classList.add('show');
+                }, 10);
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    feedbackNotification.classList.remove('show');
+                }, 3000);
+            };
+            
+            // Create coin animation
+            const createCoinAnimation = (amount, startX, startY) => {
+                const coin = document.createElement('div');
+                coin.className = 'coin-animation';
+                coin.textContent = '+' + amount;
+                coin.style.left = startX + 'px';
+                coin.style.top = startY + 'px';
+                document.body.appendChild(coin);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    document.body.removeChild(coin);
+                }, 1000);
+            };
+            
+            // Format date for display
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) {
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    if (diffHours === 0) {
+                        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+                    }
+                    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                } else if (diffDays < 7) {
+                    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+                } else {
+                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                }
+            };
+            
+            // Handle image upload
+            imageUploadBtn.addEventListener('click', () => {
+                bountyImage.click();
+            });
+            
+            bountyImage.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        uploadedImage = file;
+                        previewImg.src = event.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            removeImageBtn.addEventListener('click', () => {
+                uploadedImage = null;
+                previewImg.src = '';
+                imagePreview.style.display = 'none';
+                bountyImage.value = '';
+            });
+            
+            // Page transition effect
+            const transitionToPage = (page) => {
+                // Start fade out
+                bountyContainer.classList.add('fade-out');
+                
+                // After fade-out, load new page content and fade back in
+                setTimeout(() => {
+                    currentPage = page;
+                    loadBounties();
+                    
+                    // Smooth scroll to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                    
+                    // After content is loaded, remove fade-out class
+                    setTimeout(() => {
+                        bountyContainer.classList.remove('fade-out');
+                    }, 300);
+                }, 300);
+            };
+            
+            // Load categories from server
+            const loadCategories = () => {
+                // Make the API call to get categories
+                fetch('/api/categories')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            categories = data.categories;
+                            setupCategoryDropdowns();
+                        } else {
+                            console.error('Failed to load categories:', data.message);
+                            // Create some default categories if none exist
+                            setupDefaultCategories();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading categories:', error);
+                        // Create some default categories if API fails
+                        setupDefaultCategories();
+                    });
+            };
+            
+            // Set up default categories for development
+            const setupDefaultCategories = () => {
+                categories = [
+                    { _id: "cs", name: "Computer Science", icon: "fa-laptop-code" },
+                    { _id: "business", name: "Business", icon: "fa-chart-line" },
+                    { _id: "law", name: "Law", icon: "fa-balance-scale" },
+                    { _id: "medicine", name: "Medicine", icon: "fa-heartbeat" },
+                    { _id: "engineering", name: "Engineering", icon: "fa-cogs" },
+                    { _id: "science", name: "Science", icon: "fa-atom" },
+                    { _id: "humanities", name: "Humanities", icon: "fa-book" },
+                    { _id: "arts", name: "Arts", icon: "fa-paint-brush" }
+                ];
+                setupCategoryDropdowns();
+            };
+            
+            // Set up category dropdowns
+            const setupCategoryDropdowns = () => {
+                setupSidebarCategoryDropdown();
+                setupCreateBountyCategoryDropdown();
+            };
+            
+            // Set up sidebar category dropdown
+            const setupSidebarCategoryDropdown = () => {
+                const dropdown = document.querySelector('#categorySidebarDropdown .dropdown-selected');
+                const options = document.querySelector('#categorySidebarDropdown .dropdown-options');
+                
+                // Generate category options
+                let optionsHTML = `<input type="text" class="dropdown-search" placeholder="Search categories...">`;
+                
+                categories.forEach(category => {
+                    optionsHTML += `
+                        <div class="dropdown-option" data-id="${category._id}" data-name="${category.name}">
+                            <i class="fas ${category.icon}"></i> ${category.name}
+                        </div>
+                    `;
+                });
+                
+                options.innerHTML = optionsHTML;
+                
+                // Add click event to dropdown
+                dropdown.addEventListener('click', () => {
+                    options.classList.toggle('dropdown-open');
+                });
+                
+                // Add click events to options
+                document.querySelectorAll('#categorySidebarDropdown .dropdown-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const categoryId = option.dataset.id;
+                        const categoryName = option.dataset.name;
+                        
+                        // Update dropdown text
+                        dropdown.querySelector('span').textContent = categoryName;
+                        
+                        // Update filter
+                        currentCategory = categoryId;
+                        activeFilterType = 'category';
+                        
+                        // Show reset button
+                        resetFiltersBtn.style.display = 'flex';
+                        
+                        // Close dropdown
+                        options.classList.remove('dropdown-open');
+                        
+                        // Reset to first page and reload bounties
+                        currentPage = 1;
+                        loadBounties();
+                    });
+                });
+                
+                // Add search functionality
+                const searchInput = document.querySelector('#categorySidebarDropdown .dropdown-search');
+                searchInput.addEventListener('input', () => {
+                    const searchValue = searchInput.value.toLowerCase();
+                    
+                    document.querySelectorAll('#categorySidebarDropdown .dropdown-option').forEach(option => {
+                        const categoryName = option.dataset.name.toLowerCase();
+                        
+                        if (categoryName.includes(searchValue)) {
+                            option.style.display = 'flex';
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target) && !options.contains(e.target)) {
+                        options.classList.remove('dropdown-open');
+                    }
+                });
+            };
+            
+            // Set up create bounty category dropdown
+            const setupCreateBountyCategoryDropdown = () => {
+                const dropdown = document.querySelector('#createBountyCategoryDropdown .dropdown-selected');
+                const options = document.querySelector('#createBountyCategoryDropdown .dropdown-options');
+                
+                // Generate category options
+                let optionsHTML = `<input type="text" class="dropdown-search" placeholder="Search categories...">`;
+                
+                categories.forEach(category => {
+                    optionsHTML += `
+                        <div class="dropdown-option" data-id="${category._id}" data-name="${category.name}" data-icon="${category.icon}">
+                            <i class="fas ${category.icon}"></i> ${category.name}
+                        </div>
+                    `;
+                });
+                
+                optionsHTML += `
+                    <div class="dropdown-create">
+                        <i class="fas fa-plus"></i> Create New Category
+                    </div>
+                `;
+                
+                options.innerHTML = optionsHTML;
+                
+                // Add click event to dropdown
+                dropdown.addEventListener('click', () => {
+                    options.classList.toggle('dropdown-open');
+                });
+                
+                // Add click events to options
+                document.querySelectorAll('#createBountyCategoryDropdown .dropdown-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const categoryId = option.dataset.id;
+                        const categoryName = option.dataset.name;
+                        const categoryIcon = option.dataset.icon;
+                        
+                        // Update dropdown text
+                        dropdown.querySelector('span').textContent = categoryName;
+                        
+                        // Update selected category
+                        selectedCategoryId = categoryId;
+                        selectedCategoryIcon = categoryIcon;
+                        
+                        // Close dropdown
+                        options.classList.remove('dropdown-open');
+                    });
+                });
+                
+                // Add click event to create new category
+                document.querySelector('#createBountyCategoryDropdown .dropdown-create').addEventListener('click', () => {
+                    // Show create category modal
+                    createCategoryModal.classList.add('show');
+                    
+                    // Close category dropdown
+                    options.classList.remove('dropdown-open');
+                });
+                
+                // Add search functionality
+                const searchInput = document.querySelector('#createBountyCategoryDropdown .dropdown-search');
+                searchInput.addEventListener('input', () => {
+                    const searchValue = searchInput.value.toLowerCase();
+                    
+                    document.querySelectorAll('#createBountyCategoryDropdown .dropdown-option').forEach(option => {
+                        const categoryName = option.dataset.name.toLowerCase();
+                        
+                        if (categoryName.includes(searchValue)) {
+                            option.style.display = 'flex';
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target) && !options.contains(e.target)) {
+                        options.classList.remove('dropdown-open');
+                    }
+                });
+            };
+            
+            // Create a new category
+            const createCategory = () => {
+                const categoryName = document.getElementById('categoryName').value;
+                
+                if (!categoryName || categoryName.trim() === '') {
+                    showFeedback('Please enter a category name.', 'error');
+                    return;
+                }
+                
+                if (!selectedCreateCategoryIcon) {
+                    showFeedback('Please select an icon for the category.', 'error');
+                    return;
+                }
+                
+                // Check if category already exists
+                const categoryExists = categories.some(category => 
+                    category.name.toLowerCase() === categoryName.toLowerCase()
+                );
+                
+                if (categoryExists) {
+                    showFeedback('This category already exists.', 'error');
+                    return;
+                }
+                
+                // Prepare category data
+                const newCategory = {
+                    name: categoryName,
+                    icon: selectedCreateCategoryIcon
+                };
+                
+                // Create category on the server
+                fetch('/api/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newCategory)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Add new category to local array
+                        const createdCategory = {
+                            _id: data.category_id,
+                            name: categoryName,
+                            icon: selectedCreateCategoryIcon
+                        };
+                        
+                        categories.push(createdCategory);
+                        
+                        // Update dropdowns
+                        setupCategoryDropdowns();
+                        
+                        // Select the new category in the create bounty form
+                        const dropdown = document.querySelector('#createBountyCategoryDropdown .dropdown-selected');
+                        dropdown.querySelector('span').textContent = categoryName;
+                        selectedCategoryId = data.category_id;
+                        selectedCategoryIcon = selectedCreateCategoryIcon;
+                        
+                        // Close modal
+                        createCategoryModal.classList.remove('show');
+                        
+                        // Reset form
+                        document.getElementById('categoryName').value = '';
+                        document.querySelectorAll('.icon-option').forEach(option => {
+                            option.classList.remove('selected');
+                        });
+                        selectedCreateCategoryIcon = null;
+                        
+                        // Show success message
+                        showFeedback('Category created successfully!', 'success');
+                    } else {
+                        throw new Error(data.message || 'Failed to create category');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating category:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Load user data
+            const loadUserData = () => {
+                fetch('/get-user-data')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            currentUser = data.user;
+                            
+                            // Update UI with user data
+                            usernameElement.textContent = currentUser.username;
+                            coinBalanceElement.textContent = currentUser.coins_balance;
+                            
+                            // Load categories first
+                            loadCategories();
+                            
+                            // Now load bounties
+                            loadBounties();
+                            
+                            // Load badges
+                            loadBadges();
+                            
+                            // Load challenges and quests
+                            loadChallenges();
+                            loadQuests();
+                            
+                            // Load popular tags
+                            loadPopularTags();
+                        } else {
+                            console.error('Failed to load user data:', data.message);
+                            showFeedback('Failed to load user data. Please refresh the page.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading user data:', error);
+                        showFeedback('Error loading user data. Please refresh the page.', 'error');
+                    });
+            };
+            
+            // Load popular tags
+            const loadPopularTags = () => {
+                // Make an API call to get popular tags
+                // This is a simplified example, you would need to implement this endpoint
+                fetch('/api/tags/popular')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            popularTags = data.tags;
+                            displayPopularTags(popularTags);
+                        } else {
+                            console.error('Failed to load popular tags:', data.message);
+                            popularTagsContainer.innerHTML = '<div>No tags available</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading popular tags:', error);
+                        // Create some sample tags for development
+                        const sampleTags = [
+                            { name: 'python', count: 42 },
+                            { name: 'java', count: 35 },
+                            { name: 'algorithms', count: 28 },
+                            { name: 'database', count: 24 },
+                            { name: 'react', count: 21 },
+                            { name: 'machine-learning', count: 18 },
+                            { name: 'nodejs', count: 15 },
+                            { name: 'web-dev', count: 12 }
+                        ];
+                        displayPopularTags(sampleTags);
+                    });
+            };
+            
+            // Display popular tags
+            const displayPopularTags = (tags) => {
+                if (!tags || tags.length === 0) {
+                    popularTagsContainer.innerHTML = '<div>No tags available</div>';
+                    return;
+                }
+                
+                let html = '';
+                
+                tags.forEach(tag => {
+                    html += `
+                        <div class="tag-cloud-item" data-tag="${tag.name}">
+                            ${tag.name} <span class="tag-count">${tag.count}</span>
+                        </div>
+                    `;
+                });
+                
+                popularTagsContainer.innerHTML = html;
+                
+                // Add click events to tag cloud items
+                document.querySelectorAll('.tag-cloud-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const tag = item.dataset.tag;
+                        searchInput.value = tag;
+                        currentSearch = tag;
+                        currentPage = 1;
+                        loadBounties();
+                    });
+                });
+            };
+            
+            // Load bounties from server
+            const loadBounties = () => {
+                bountyContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Prepare query parameters
+                const params = new URLSearchParams();
+                params.append('filter', currentFilter);
+                params.append('sort', currentSort);
+                params.append('page', currentPage);
+                params.append('limit', itemsPerPage);
+                
+                if (currentCategory) params.append('category', currentCategory);
+                if (currentComplexity) params.append('complexity', currentComplexity);
+                if (currentStatus) params.append('status', currentStatus);
+                if (currentSearch) params.append('search', currentSearch);
+                
+                // Show/hide interests header for interests filter
+                if (currentFilter === 'interests') {
+                    displayInterests();
+                } else {
+                    interestsHeader.style.display = 'none';
+                }
+                
+                // Show/hide reset filter button based on filter state
+                resetFiltersBtn.style.display = (activeFilterType) ? 'flex' : 'none';
+                
+                fetch(`/api/bounties?${params.toString()}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            bounties = data.bounties;
+                            
+                            // Display appropriate message based on filter type
+                            if (bounties.length === 0) {
+                                if (currentFilter === 'interests') {
+                                    bountyContainer.innerHTML = `
+                                        <div class="no-results">
+                                            <i class="fas fa-star"></i>
+                                            <p>No bounties found matching your interests.</p>
+                                            <p>Try exploring other categories or create a new bounty!</p>
+                                        </div>
+                                    `;
+                                } else if (currentFilter === 'created') {
+                                    bountyContainer.innerHTML = `
+                                        <div class="no-results">
+                                            <i class="fas fa-file-alt"></i>
+                                            <p>You haven't created any bounties yet.</p>
+                                            <p>Click the "Create Bounty" button to post your first question!</p>
+                                        </div>
+                                    `;
+                                } else {
+                                    bountyContainer.innerHTML = `
+                                        <div class="no-results">
+                                            <i class="fas fa-search"></i>
+                                            <p>No bounties found matching your criteria.</p>
+                                            <p>Try adjusting your filters or create a new bounty!</p>
+                                        </div>
+                                    `;
+                                }
+                                paginationContainer.innerHTML = '';
+                                return;
+                            }
+                            
+                            displayBounties(bounties);
+                            setupPagination(data.total, data.page, data.pages);
+                        } else {
+                            console.error('Failed to load bounties:', data.message);
+                            bountyContainer.innerHTML = `
+                                <div class="no-results">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <p>Failed to load bounties. Please try again later.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading bounties:', error);
+                        bountyContainer.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Error loading bounties. Please try again later.</p>
+                            </div>
+                        `;
+                    });
+            };
+            
+            // Display user interests as headers
+            const displayInterests = () => {
+                if (!currentUser || !currentUser.interests || currentUser.interests.length === 0) {
+                    interestsHeader.style.display = 'none';
+                    return;
+                }
+                
+                let html = '';
+                
+                currentUser.interests.forEach(interest => {
+                    html += `<div class="interest-tag">${interest}</div>`;
+                });
+                
+                interestsHeader.innerHTML = html;
+                interestsHeader.style.display = 'flex';
+            };
+            
+            // Display bounties in the container
+            const displayBounties = (bounties) => {
+                let html = '';
+                
+                bounties.forEach(bounty => {
+                    const tags = bounty.tags.slice(0, 3); // Show only first 3 tags
+                    const hasMoreTags = bounty.tags.length > 3;
+                    
+                    // Ensure description is available
+                    const description = bounty.description || 'No description provided';
+                    
+                    // Create the stripped description (plain text without HTML)
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = description;
+                    const strippedDescription = tempDiv.textContent || tempDiv.innerText || 'No description provided';
+                    
+                    // Find category info
+                    const category = categories.find(c => c._id === bounty.category) || 
+                                    { name: bounty.category, icon: 'fa-tag' };
+                    
+                    html += `
+                        <div class="bounty-card" data-id="${bounty._id}">
+                            <div class="bounty-header">
+                                <h3 class="bounty-title">${bounty.title}</h3>
+                                <div class="bounty-meta">
+                                    <span class="bounty-category">${category.name}</span>
+                                    <span class="bounty-reward"><i class="fas fa-coins"></i> ${bounty.reward}</span>
+                                </div>
+                            </div>
+                            <div class="bounty-body">
+                                <div class="bounty-description">${strippedDescription}</div>
+                                <div class="bounty-tags">
+                                    ${tags.map(tag => `<span class="bounty-tag">${tag}</span>`).join('')}
+                                    ${hasMoreTags ? `<span class="bounty-tag">+${bounty.tags.length - 3} more</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="bounty-footer">
+                                <div class="bounty-stats">
+                                    <div class="bounty-stat">
+                                        <i class="fas fa-comment"></i> ${bounty.response_count || 0}
+                                    </div>
+                                    <div class="bounty-stat">
+                                        <i class="fas fa-star"></i> ${bounty.complexity}
+                                    </div>
+                                </div>
+                                <span class="bounty-status ${bounty.status === 'open' ? 'status-open' : 'status-closed'}">
+                                    ${bounty.status === 'open' ? 'Open' : 'Closed'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                bountyContainer.innerHTML = html;
+                
+                // Add click event to each bounty card
+                document.querySelectorAll('.bounty-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const bountyId = card.dataset.id;
+                        openBountyDetail(bountyId);
+                    });
+                });
+            };
+            
+            // Set up pagination
+            const setupPagination = (total, currentPage, totalPages) => {
+                // Clear previous pagination
+                paginationContainer.innerHTML = '';
+                
+                // Don't show pagination if there's only one page
+                if (totalPages <= 1) {
+                    return;
+                }
+                
+                // If current page is beyond available pages, adjust it
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                    // Re-fetch data with corrected page
+                    loadBounties();
+                    return;
+                }
+                
+                // Create pagination buttons
+                let html = '';
+                
+                // Previous button
+                html += `
+                    <button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                            ${currentPage === 1 ? 'disabled' : `data-page="${currentPage - 1}"`}>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+                
+                // Page buttons
+                const maxButtons = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage + 1 < maxButtons) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                            ${i}
+                        </button>
+                    `;
+                }
+                
+                // Next button
+                html += `
+                    <button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}"
+                            ${currentPage === totalPages ? 'disabled' : `data-page="${currentPage + 1}"`}>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+                
+                paginationContainer.innerHTML = html;
+                
+                // Add click events to pagination buttons
+                document.querySelectorAll('.page-btn:not(.disabled):not(.active)').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const pageNum = parseInt(btn.dataset.page);
+                        transitionToPage(pageNum);
+                    });
+                });
+            };
+            
+            // Open bounty detail modal
+            const openBountyDetail = (bountyId) => {
+                // Show loading state
+                bountyDetailContent.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Reset response editor
+                responseEditor.root.innerHTML = '';
+                
+                // Show modal
+                bountyDetailModal.classList.add('show');
+                
+                // Get bounty details
+                fetch(`/api/bounties/${bountyId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            currentBounty = data.bounty;
+                            displayBountyDetail(currentBounty);
+                            
+                            // Check if user is the bounty creator
+                            const isCreator = currentBounty.creator._id === currentUser._id;
+                            
+                            // Show or hide response form based on conditions
+                            if (isCreator || currentBounty.status === 'closed') {
+                                // Creator cannot respond to their own bounty
+                                // Or the bounty is closed, so no new responses
+                                responseFormSection.style.display = 'none';
+                            } else {
+                                responseFormSection.style.display = 'block';
+                            }
+                            
+                            // Load responses for this bounty
+                            loadResponses(bountyId);
+                        } else {
+                            console.error('Failed to load bounty details:', data.message);
+                            bountyDetailContent.innerHTML = `
+                                <div class="no-results">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <p>Failed to load bounty details. Please try again later.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading bounty details:', error);
+                        bountyDetailContent.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Error loading bounty details. Please try again later.</p>
+                            </div>
+                        `;
+                    });
+            };
+            
+            // Display bounty details
+            const displayBountyDetail = (bounty) => {
+                // Format bounty date
+                const formattedDate = formatDate(bounty.created_at);
+                
+                // Find category info
+                const category = categories.find(c => c._id === bounty.category) || 
+                               { name: bounty.category, icon: 'fa-tag' };
+                
+                // Sanitize description using DOMPurify
+                const sanitizedDescription = DOMPurify.sanitize(bounty.description);
+                
+                // Create HTML for bounty details
+                let html = `
+                    <div class="bounty-detail-header">
+                        <h3 class="bounty-detail-title">${bounty.title}</h3>
+                        <div class="bounty-detail-meta">
+                            <div class="bounty-creator">
+                                <span>${bounty.creator.username}</span> · 
+                                <span>${formattedDate}</span>
+                            </div>
+                            <div class="bounty-reward">
+                                <i class="fas fa-coins"></i> ${bounty.reward} coins
+                            </div>
+                        </div>
+                        <div class="bounty-detail-tags">
+                            <span class="bounty-category">
+                                <i class="fas ${category.icon}"></i> ${category.name}
+                            </span>
+                            <span class="bounty-tag">
+                                <i class="fas fa-star"></i> Level ${bounty.complexity}
+                            </span>
+                            ${bounty.tags.map(tag => `<span class="bounty-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // Add auto-pin timer if the bounty is created by current user and is open
+                if (bounty.creator._id === currentUser._id && bounty.status === 'open') {
+                    // Calculate time remaining (72 hours from creation)
+                    const createdDate = new Date(bounty.created_at);
+                    const autoPinTime = new Date(createdDate.getTime() + (72 * 60 * 60 * 1000)); // 72 hours
+                    const now = new Date();
+                    const timeRemaining = autoPinTime - now;
+                    
+                    if (timeRemaining > 0) {
+                        // Format time remaining
+                        const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        html += `
+                            <div class="auto-pin-timer">
+                                <i class="fas fa-clock"></i>
+                                <span class="timer-label">Auto-pin in</span>
+                                <span class="timer-value" id="autoPinTimer">${hours} hours ${minutes} minutes</span>
+                                <span class="timer-label">if you don't select a response.</span>
+                            </div>
+                        `;
+                        
+                        // Set up timer to update countdown
+                        clearInterval(autoPinTimer);
+                        autoPinTimer = setInterval(() => {
+                            const now = new Date();
+                            const newTimeRemaining = autoPinTime - now;
+                            
+                            if (newTimeRemaining <= 0) {
+                                clearInterval(autoPinTimer);
+                                document.getElementById('autoPinTimer').textContent = 'Time expired';
+                                // After expiry, the system would auto-pin the highest voted response
+                            } else {
+                                const hours = Math.floor(newTimeRemaining / (1000 * 60 * 60));
+                                const minutes = Math.floor((newTimeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                                document.getElementById('autoPinTimer').textContent = `${hours} hours ${minutes} minutes`;
+                            }
+                        }, 60000); // Update every minute
+                    }
+                }
+                
+                // Add bounty description
+                html += `
+                    <div class="bounty-detail-description">${sanitizedDescription}</div>
+                `;
+                
+                // Add image if it exists (placeholder for actual implementation)
+                if (bounty.image_url) {
+                    html += `
+                        <div style="margin-top: 1rem; margin-bottom: 1rem;">
+                            <img src="${bounty.image_url}" alt="Bounty Image" style="max-width: 100%; max-height: 400px; border: 2px solid var(--ink-gray-dark);">
+                        </div>
+                    `;
+                }
+                
+                bountyDetailContent.innerHTML = html;
+                
+                // Apply syntax highlighting to code blocks
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            };
+            
+            // Load responses for a bounty
+            const loadResponses = (bountyId) => {
+                fetch(`/api/bounties/${bountyId}/responses`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            responses[bountyId] = data.responses;
+                            displayResponses(data.responses, bountyId);
+                            
+                            // Update response count
+                            document.getElementById('responseCount').textContent = 
+                                `${data.responses.length} response${data.responses.length !== 1 ? 's' : ''}`;
+                        } else {
+                            console.error('Failed to load responses:', data.message);
+                            responseList.innerHTML = `
+                                <div class="no-results">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <p>Failed to load responses. Please try again later.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading responses:', error);
+                        responseList.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Error loading responses. Please try again later.</p>
+                            </div>
+                        `;
+                    });
+            };
+            
+            // Display responses
+            const displayResponses = (responses, bountyId) => {
+                if (responses.length === 0) {
+                    responseList.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-comments"></i>
+                            <p>No responses yet. Be the first to respond!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sort responses: pinned first, then by votes (upvotes - downvotes)
+                responses.sort((a, b) => {
+                    if (a.is_pinned && !b.is_pinned) return -1;
+                    if (!a.is_pinned && b.is_pinned) return 1;
+                    return (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes);
+                });
+                
+                // Find pinned response, if any
+                currentPinnedResponse = responses.find(response => response.is_pinned);
+                
+                let html = '';
+                
+                responses.forEach(response => {
+                    const formattedDate = formatDate(response.created_at);
+                    const isAuthor = response.responder._id === currentUser._id;
+                    const isBountyCreator = currentBounty.creator._id === currentUser._id;
+                    const userVote = response.your_vote || null; // 'up', 'down', or null
+                    const isPinned = response.is_pinned;
+                    
+                    // Sanitize response content
+                    const sanitizedContent = DOMPurify.sanitize(response.content);
+                    
+                    html += `
+                        <div class="response-item ${isPinned ? 'pinned' : ''}" data-id="${response._id}">
+                            ${isPinned ? '<div class="pinned-badge"><i class="fas fa-thumbtack"></i> Pinned</div>' : ''}
+                            <div class="response-meta">
+                                <div class="response-author">
+                                    <span>${response.responder.username}</span>
+                                </div>
+                                <span class="response-date">${formattedDate}</span>
+                            </div>
+                            <div class="response-content">${sanitizedContent}</div>
+                            <div class="response-actions">
+                                <div class="response-votes">
+                                    <button class="vote-btn ${userVote === 'up' ? 'upvoted' : ''}" data-vote="up" data-id="${response._id}">
+                                        <i class="fas fa-arrow-up"></i> ${response.upvotes}
+                                    </button>
+                                    <button class="vote-btn ${userVote === 'down' ? 'downvoted' : ''}" data-vote="down" data-id="${response._id}">
+                                        <i class="fas fa-arrow-down"></i> ${response.downvotes}
+                                    </button>
+                                </div>
+                                ${isBountyCreator && currentBounty.status === 'open' && !isPinned ? 
+                                  `<button class="pin-btn" data-id="${response._id}">
+                                    <i class="fas fa-thumbtack"></i> Pin This Answer
+                                   </button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                responseList.innerHTML = html;
+                
+                // Add event listeners for votes
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const responseId = btn.dataset.id;
+                        const voteType = btn.dataset.vote;
+                        voteOnResponse(responseId, voteType, bountyId);
+                    });
+                });
+                
+                // Add event listeners for pin buttons
+                document.querySelectorAll('.pin-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const responseId = btn.dataset.id;
+                        pinResponse(responseId, bountyId);
+                    });
+                });
+                
+                // Apply syntax highlighting to code blocks
+                document.querySelectorAll('.response-content pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            };
+            
+            // Vote on a response
+            const voteOnResponse = (responseId, voteType, bountyId) => {
+                fetch(`/api/responses/${responseId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ vote_type: voteType })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Reload responses to reflect the new vote
+                        loadResponses(bountyId);
+                        showFeedback(`Vote recorded successfully!`, 'success');
+                    } else {
+                        throw new Error(data.message || 'Failed to vote');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error voting:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Pin a response
+            const pinResponse = (responseId, bountyId) => {
+                // Check if bounty is still open
+                if (currentBounty.status !== 'open') {
+                    showFeedback('This bounty is already closed.', 'error');
+                    return;
+                }
+                
+                // Confirm pin action
+                if (!confirm(`Are you sure you want to pin this response? This will close the bounty and award ${currentBounty.reward} coins to the responder.`)) {
+                    return;
+                }
+                
+                fetch(`/api/responses/${responseId}/pin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update local bounty status
+                        currentBounty.status = 'closed';
+                        
+                        // Update UI to reflect pinned response
+                        const pinnedResponse = responses[bountyId].find(r => r._id === responseId);
+                        if (pinnedResponse) {
+                            pinnedResponse.is_pinned = true;
+                            currentPinnedResponse = pinnedResponse;
+                            
+                            // Update user's coin balance
+                            currentUser.coins_balance = data.newBalance;
+                            coinBalanceElement.textContent = currentUser.coins_balance;
+                            
+                            // Create coin animation effect
+                            const pinBtn = document.querySelector(`.pin-btn[data-id="${responseId}"]`);
+                            if (pinBtn) {
+                                const rect = pinBtn.getBoundingClientRect();
+                                createCoinAnimation(currentBounty.reward, rect.left, rect.top);
+                            }
+                            
+                            // Reload responses
+                            loadResponses(bountyId);
+                            
+                            showFeedback(`Response pinned and ${currentBounty.reward} coins rewarded!`, 'success');
+                            
+                            // Clear auto-pin timer if it exists
+                            clearInterval(autoPinTimer);
+                            
+                            // Remove timer display
+                            const timerElement = document.querySelector('.auto-pin-timer');
+                            if (timerElement) {
+                                timerElement.remove();
+                            }
+                            
+                            // Hide response form since bounty is now closed
+                            responseFormSection.style.display = 'none';
+                        }
+                    } else {
+                        throw new Error(data.message || 'Failed to pin response');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error pinning response:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Submit a response
+            const submitResponse = () => {
+                // Check if bounty is still open
+                if (currentBounty.status !== 'open') {
+                    showFeedback('This bounty is already closed.', 'error');
+                    return;
+                }
+                
+                // Check if user is the creator (creators should not answer their own bounties)
+                if (currentBounty.creator._id === currentUser._id) {
+                    showFeedback('You cannot respond to your own bounty.', 'error');
+                    return;
+                }
+                
+                // Get response content
+                const content = responseEditor.root.innerHTML;
+                
+                // Validate content
+                if (!content || content.trim() === '' || content === '<p><br></p>') {
+                    showFeedback('Please enter a response.', 'error');
+                    return;
+                }
+                
+                // Prepare data
+                const responseData = {
+                    bounty_id: currentBounty._id,
+                    content: content
+                };
+                
+                // Submit response
+                fetch('/api/responses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(responseData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Clear editor
+                        responseEditor.root.innerHTML = '';
+                        
+                        // Reload responses
+                        loadResponses(currentBounty._id);
+                        
+                        showFeedback('Response submitted successfully!', 'success');
+                    } else {
+                        throw new Error(data.message || 'Failed to submit response');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting response:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Load challenges
+            const loadChallenges = () => {
+                fetch('/api/challenges')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            challenges = data.challenges;
+                            
+                            // Show the active challenge if there is one
+                            if (challenges.length > 0) {
+                                displayActiveChallenge(challenges[0]);
+                            } else {
+                                // Hide challenge section if no active challenges
+                                challengeSection.style.display = 'none';
+                            }
+                        } else {
+                            console.error('Failed to load challenges:', data.message);
+                            challengeSection.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading challenges:', error);
+                        challengeSection.style.display = 'none';
+                    });
+            };
+            
+            // Display active challenge
+            const displayActiveChallenge = (challenge) => {
+                // Calculate time remaining
+                const endDate = new Date(challenge.end_date);
+                const now = new Date();
+                const timeRemaining = endDate - now;
+                
+                if (timeRemaining <= 0) {
+                    // Challenge has ended, hide section
+                    challengeSection.style.display = 'none';
+                    return;
+                }
+                
+                // Format time remaining
+                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                // Update UI
+                document.querySelector('.challenge-title').textContent = challenge.title;
+                document.querySelector('.challenge-description').textContent = challenge.description;
+                document.querySelector('.challenge-bonus').innerHTML = `<i class="fas fa-coins"></i> ${challenge.reward_bonus} Bonus Coins Per Solve`;
+                document.getElementById('challengeTimer').textContent = `${days} days ${hours} hours left`;
+                
+                // Show challenge section
+                challengeSection.style.display = 'flex';
+                
+                // Set up timer to update countdown
+                setInterval(() => {
+                    const now = new Date();
+                    const newTimeRemaining = endDate - now;
+                    
+                    if (newTimeRemaining <= 0) {
+                        challengeSection.style.display = 'none';
+                    } else {
+                        const days = Math.floor(newTimeRemaining / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((newTimeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        document.getElementById('challengeTimer').textContent = `${days} days ${hours} hours left`;
+                    }
+                }, 3600000); // Update every hour
+            };
+            
+            // Load quests
+            const loadQuests = () => {
+                fetch('/api/quests')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            quests = data.quests;
+                            
+                            // Show active quest if there is one
+                            if (data.user_progress && data.user_progress.length > 0) {
+                                const activeQuestProgress = data.user_progress[0];
+                                displayActiveQuest(activeQuestProgress);
+                            } else {
+                                // Hide quest section if no active quests
+                                questSection.style.display = 'none';
+                            }
+                        } else {
+                            console.error('Failed to load quests:', data.message);
+                            questSection.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading quests:', error);
+                        questSection.style.display = 'none';
+                    });
+            };
+            
+            // Display active quest
+            const displayActiveQuest = (questProgress) => {
+                // Find the quest details
+                const quest = quests.find(q => q._id === questProgress.quest_id);
+                if (!quest) {
+                    questSection.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate progress percentage
+                const totalSteps = quest.bounty_sequence.length;
+                const completedSteps = questProgress.current_step;
+                const progressPercent = (completedSteps / totalSteps) * 100;
+                
+                // Get next step description
+                let nextStepText = 'Completed!';
+                if (completedSteps < totalSteps) {
+                    const nextBountyId = quest.bounty_sequence[completedSteps];
+                    const nextBounty = bounties.find(b => b._id === nextBountyId);
+                    if (nextBounty) {
+                        nextStepText = nextBounty.title;
+                    } else {
+                        nextStepText = 'Next bounty';
+                    }
+                }
+                
+                // Update UI
+                document.querySelector('.quest-title').textContent = quest.title;
+                document.querySelector('.quest-description').textContent = quest.description;
+                document.querySelector('.progress-bar').style.width = `${progressPercent}%`;
+                document.querySelector('.quest-steps').innerHTML = `
+                    <span>Step ${completedSteps}/${totalSteps} completed</span>
+                    <span>Next: ${nextStepText}</span>
+                `;
+                document.querySelector('.quest-reward').innerHTML = `
+                    <i class="fas fa-coins"></i> ${quest.total_reward} Coins upon completion
+                `;
+                
+                // Show quest section
+                questSection.style.display = 'block';
+            };
+            
+            // Load badges
+            const loadBadges = () => {
+                fetch('/api/badges')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            badges = data.badges;
+                            displayBadges(badges);
+                        } else {
+                            console.error('Failed to load badges:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading badges:', error);
+                    });
+            };
+            
+            // Display badges
+            const displayBadges = (badges) => {
+                if (badges.length === 0) {
+                    badgesList.innerHTML = `
+                        <div class="badge-item">
+                            <div class="badge-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="badge-name">No badges yet</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                badges.forEach(badge => {
+                    html += `
+                        <div class="badge-item">
+                            <div class="badge-icon ${badge.earned ? 'earned' : ''}">
+                                <i class="fas ${badge.icon}"></i>
+                            </div>
+                            <div class="badge-name">${badge.name}</div>
+                        </div>
+                    `;
+                });
+                
+                badgesList.innerHTML = html;
+            };
+            
+            // Create a new bounty
+            const createBounty = () => {
+                // Get form values
+                const title = document.getElementById('bountyTitle').value;
+                const description = descriptionEditor.root.innerHTML;
+                
+                // Validate inputs
+                if (!title || title.trim() === '') {
+                    showFeedback('Please enter a title for your bounty.', 'error');
+                    return;
+                }
+                
+                if (!description || description.trim() === '' || description === '<p><br></p>') {
+                    showFeedback('Please enter a description for your bounty.', 'error');
+                    return;
+                }
+                
+                if (!selectedCategoryId) {
+                    showFeedback('Please select a category for your bounty.', 'error');
+                    return;
+                }
+                
+                if (!selectedComplexity) {
+                    showFeedback('Please select a complexity level for your bounty.', 'error');
+                    return;
+                }
+                
+                // Calculate reward based on complexity
+                let reward = 25; // Default for levels 1-2
+                if (selectedComplexity >= 3 && selectedComplexity <= 4) {
+                    reward = 50;
+                } else if (selectedComplexity === 5) {
+                    reward = 75;
+                }
+                
+                // Check if user has enough coins
+                if (currentUser.coins_balance < reward) {
+                    showFeedback(`You don't have enough coins (${reward}) to create this bounty.`, 'error');
+                    return;
+                }
+                
+                // Prepare form data for upload with image
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('category', selectedCategoryId);
+                formData.append('complexity', selectedComplexity);
+                
+                // Add tags
+                currentTags.forEach((tag, index) => {
+                    formData.append(`tags[${index}]`, tag);
+                });
+                
+                // Add image if present
+                if (uploadedImage) {
+                    formData.append('image', uploadedImage);
+                }
+                
+                // Submit bounty
+                fetch('/api/bounties', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update user's coin balance
+                        currentUser.coins_balance = data.newBalance;
+                        coinBalanceElement.textContent = currentUser.coins_balance;
+                        
+                        // Close modal
+                        createBountyModal.classList.remove('show');
+                        
+                        // Reset form
+                        resetCreateForm();
+                        
+                        // Show success feedback
+                        showFeedback('Bounty created successfully!', 'success');
+                        
+                        // Reload bounties
+                        loadBounties();
+                    } else {
+                        throw new Error(data.message || 'Failed to create bounty');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating bounty:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Reset create bounty form
+            const resetCreateForm = () => {
+                document.getElementById('bountyTitle').value = '';
+                descriptionEditor.root.innerHTML = '';
+                
+                // Reset category dropdown
+                const categoryDropdown = document.querySelector('#createBountyCategoryDropdown .dropdown-selected');
+                categoryDropdown.querySelector('span').textContent = 'Select Category';
+                selectedCategoryId = null;
+                selectedCategoryIcon = null;
+                
+                // Reset complexity
+                document.querySelectorAll('.complexity-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                selectedComplexity = null;
+                
+                // Reset tags
+                currentTags = [];
+                tagsPreview.innerHTML = '';
+                
+                // Reset reward
+                document.getElementById('rewardValue').textContent = '0';
+                
+                // Reset image upload
+                uploadedImage = null;
+                previewImg.src = '';
+                imagePreview.style.display = 'none';
+                bountyImage.value = '';
+            };
+            
+            // Update reward value based on complexity
+            const updateRewardValue = () => {
+                let reward = 0;
+                
+                if (selectedComplexity) {
+                    if (selectedComplexity <= 2) {
+                        reward = 25;
+                    } else if (selectedComplexity <= 4) {
+                        reward = 50;
+                    } else {
+                        reward = 75;
+                    }
+                }
+                
+                document.getElementById('rewardValue').textContent = reward;
+            };
+            
+            // Filter bounties based on sidebar selections
+            const updateFilters = (element, filterType) => {
+                // If this is a reset click
+                if (element.id === 'resetFilters') {
+                    resetAllFilters();
+                    return;
+                }
+                
+                // Remove active class from all items in the same category
+                const parent = element.parentElement;
+                parent.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                element.classList.add('active');
+                
+                // Update filter state based on filter type
+                switch(filterType) {
+                    case 'filter':
+                        currentFilter = element.dataset.filter;
+                        activeFilterType = 'filter';
+                        break;
+                    case 'complexity':
+                        currentComplexity = element.dataset.complexity;
+                        activeFilterType = 'complexity';
+                        break;
+                    case 'status':
+                        currentStatus = element.dataset.status;
+                        activeFilterType = 'status';
+                        break;
+                }
+                
+                // Show reset button
+                resetFiltersBtn.style.display = 'flex';
+                
+                // Reset to first page and reload bounties
+                currentPage = 1;
+                loadBounties();
+            };
+            
+            // Reset all filters
+            const resetAllFilters = () => {
+                // Reset filter variables
+                currentFilter = 'all';
+                currentCategory = null;
+                currentComplexity = null;
+                currentStatus = null;
+                currentSearch = '';
+                currentPage = 1;
+                activeFilterType = null;
+                
+                // Reset UI
+                searchInput.value = '';
+                document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Set 'All Bounties' as active
+                document.querySelector('.sidebar-menu-item[data-filter="all"]').classList.add('active');
+                
+                // Reset category dropdown
+                const categoryDropdown = document.querySelector('#categorySidebarDropdown .dropdown-selected');
+                categoryDropdown.querySelector('span').textContent = 'Select Category';
+                
+                // Hide reset button
+                resetFiltersBtn.style.display = 'none';
+                
+                // Hide interests header
+                interestsHeader.style.display = 'none';
+                
+                // Reload bounties
+                loadBounties();
+            };
+            
+            // Event Listeners
+            
+            // Reset filters button
+            resetFiltersBtn.addEventListener('click', () => resetAllFilters());
+            
+            // Create bounty button
+            createBountyBtn.addEventListener('click', () => {
+                resetCreateForm();
+                createBountyModal.classList.add('show');
+            });
+            
+            // Close create modal
+            closeCreateModal.addEventListener('click', () => {
+                createBountyModal.classList.remove('show');
+            });
+            
+            // Cancel create button
+            cancelCreateBtn.addEventListener('click', () => {
+                createBountyModal.classList.remove('show');
+            });
+            
+            // Close detail modal
+            closeDetailModal.addEventListener('click', () => {
+                bountyDetailModal.classList.remove('show');
+                clearInterval(autoPinTimer);
+            });
+            
+            // Close category modal
+            closeCategoryModal.addEventListener('click', () => {
+                createCategoryModal.classList.remove('show');
+            });
+            
+            // Cancel category button
+            cancelCategoryBtn.addEventListener('click', () => {
+                createCategoryModal.classList.remove('show');
+            });
+            
+            // Close modals when clicking outside
+            createBountyModal.addEventListener('click', (e) => {
+                if (e.target === createBountyModal) {
+                    createBountyModal.classList.remove('show');
+                }
+            });
+            
+            bountyDetailModal.addEventListener('click', (e) => {
+                if (e.target === bountyDetailModal) {
+                    bountyDetailModal.classList.remove('show');
+                    clearInterval(autoPinTimer);
+                }
+            });
+            
+            createCategoryModal.addEventListener('click', (e) => {
+                if (e.target === createCategoryModal) {
+                    createCategoryModal.classList.remove('show');
+                }
+            });
+            
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (createBountyModal.classList.contains('show')) {
+                        createBountyModal.classList.remove('show');
+                    }
+                    if (bountyDetailModal.classList.contains('show')) {
+                        bountyDetailModal.classList.remove('show');
+                        clearInterval(autoPinTimer);
+                    }
+                    if (createCategoryModal.classList.contains('show')) {
+                        createCategoryModal.classList.remove('show');
+                    }
+                }
+            });
+            
+            // Complexity option selection
+            document.querySelectorAll('.complexity-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    document.querySelectorAll('.complexity-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Update selected complexity
+                    selectedComplexity = parseInt(option.dataset.complexity);
+                    
+                    // Update reward value
+                    updateRewardValue();
+                });
+            });
+            
+            // Icon option selection
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    document.querySelectorAll('.icon-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Update selected icon
+                    selectedCreateCategoryIcon = option.dataset.icon;
+                });
+            });
+            
+            // Add tag button
+            addTagBtn.addEventListener('click', () => {
+                const tag = tagInput.value.trim();
+                
+                if (!tag) {
+                    showFeedback('Please enter a tag.', 'warning');
+                    return;
+                }
+                
+                if (currentTags.length >= 5) {
+                    showFeedback('You can only add up to 5 tags.', 'warning');
+                    return;
+                }
+                
+                if (currentTags.includes(tag)) {
+                    showFeedback('This tag has already been added.', 'warning');
+                    return;
+                }
+                
+                // Add tag to array
+                currentTags.push(tag);
+                
+                // Update preview
+                tagsPreview.innerHTML += `
+                    <div class="tag-preview" data-tag="${tag}">
+                        <span>${tag}</span>
+                        <span class="tag-remove" data-tag="${tag}">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </div>
+                `;
+                
+                // Clear input
+                tagInput.value = '';
+                
+                // Add event listener to remove button
+                document.querySelectorAll('.tag-remove').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tag = btn.dataset.tag;
+                        
+                        // Remove tag from array
+                        currentTags = currentTags.filter(t => t !== tag);
+                        
+                        // Remove tag from preview
+                        document.querySelector(`.tag-preview[data-tag="${tag}"]`).remove();
+                    });
+                });
+            });
+            
+            // Add tag on Enter key
+            tagInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTagBtn.click();
+                }
+            });
+            
+            // Submit bounty form
+            createBountyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                createBounty();
+            });
+            
+            // Submit category form
+            createCategoryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                createCategory();
+            });
+            
+            // Submit response button
+            submitResponseBtn.addEventListener('click', submitResponse);
+            
+            // Search input
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    currentSearch = searchInput.value.trim();
+                    currentPage = 1;
+                    loadBounties();
+                }
+            });
+            
+            // Sort select
+            sortSelect.addEventListener('change', () => {
+                currentSort = sortSelect.value;
+                currentPage = 1;
+                loadBounties();
+            });
+            
+            // Sidebar filter clicks
+            document.querySelectorAll('.sidebar-menu-item[data-filter]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'filter'));
+            });
+            
+            document.querySelectorAll('.sidebar-menu-item[data-complexity]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'complexity'));
+            });
+            
+            document.querySelectorAll('.sidebar-menu-item[data-status]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'status'));
+            });
+            
+            // Initialize application
+            loadUserData();
+        });
+    </script>
+</body>
+</html>

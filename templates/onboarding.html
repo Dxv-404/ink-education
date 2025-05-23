@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INK | Onboarding</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: black;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(12px) brightness(0.6);
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Left Form */
+    .form-section {
+      flex: 4;
+      background: #F7F7F7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2rem;
+      position: relative;
+    }
+
+    /* Right GIF */
+    .gif-section {
+      flex: 6;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gif-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ink-title {
+      font-family: 'Staatliches', cursive;
+      font-size: 8rem;
+      letter-spacing: 10px;
+      color: black;
+      margin-bottom: 2rem;
+    }
+
+    /* Pixel Heart */
+    .pixel-heart {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 2px;
+    }
+    .heart-pixel {
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
+
+    /* Question Container */
+    .question-container {
+      width: 100%;
+      max-width: 600px;
+      background: #F7F7F7;
+      padding: 2rem;
+      border: 2px solid black;
+      border-radius: 15px;
+      text-align: center;
+      color: black;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 10px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8rem;
+      border: 2px solid black;
+      background: black;
+      color: white;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    button {
+      background: black;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #333;
+      color: white;
+      border-color: white;
+    }
+
+    .progress-bar {
+      margin-top: 2rem;
+      width: 100%;
+      height: 6px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      background: black;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    .github-icon {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Layout -->
+<div class="container">
+
+  <!-- Left Form -->
+  <div class="form-section">
+    <!-- Heart -->
+    <div class="pixel-heart" id="pixelHeart"></div>
+
+    <!-- INK -->
+    <div class="ink-title">INK</div>
+
+    <!-- Form -->
+    <!-- Form -->
+    <form id="onboardingForm" method="POST">
+      <input type="hidden" id="user_id_input" name="user_id" value="{{ session.user_id }}">
+
+      <div class="question-container" id="questionBox">
+        <img id="questionIcon" src="{{ url_for('static', filename='assets/graduation_cap.png') }}" class="github-icon" alt="Icon">
+        <div id="questionText">Which university do you study at?</div>
+
+        <div id="inputContainer">
+          <!-- This will be filled dynamically -->
+        </div>
+
+        <button type="submit">Next</button>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+    </form>
+
+  </div>
+
+  <!-- Right GIF -->
+  <div class="gif-section">
+    <img src="{{ url_for('static', filename='assets/onboarding.gif') }}">
+  </div>
+
+</div>
+
+<script>
+  const heartPattern = [
+  [0, 1, 0, 1, 0],
+  [1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 0],
+  [0, 0, 1, 0, 0]
+];
+const pixelHeart = document.getElementById('pixelHeart');
+heartPattern.forEach((row, rowIndex) => {
+  row.forEach((col, colIndex) => {
+    if (col) {
+      const div = document.createElement('div');
+      div.className = 'heart-pixel';
+      div.style.gridRow = rowIndex + 1;
+      div.style.gridColumn = colIndex + 1;
+      pixelHeart.appendChild(div);
+    }
+  });
+});
+
+const questions = [
+  { text: "Which university do you study at?", name: "university", icon: "graduation_cap.png" },
+  { text: "Which department are you from?", name: "department", icon: "department_icon.png" },
+  { text: "What is your year of study?", name: "year", icon: "year_icon.png" },
+  { text: "What are your skills? (Separate with commas)", name: "skills", icon: "skills_icon.png" },
+  { text: "What are your interests? (Separate with commas)", name: "interests", icon: "interest_icon.png" },
+  { text: "Connect your GitHub account!", name: "github", icon: "github_icon.png", githubLogin: true }
+];
+
+let currentQuestion = 0;
+const questionText = document.getElementById('questionText');
+const questionIcon = document.getElementById('questionIcon');
+const answerInput = document.getElementById('answerInput');
+const progress = document.getElementById('progress');
+const form = document.getElementById('onboardingForm');
+
+form.addEventListener('submit', (e) => {
+  // For GitHub question, let the form submit naturally
+  if (questions[currentQuestion].githubLogin) {
+    // Do nothing, let the form submit naturally to the server
+    return;
+  }
+
+  // For other questions, handle them client-side
+  e.preventDefault();
+
+  // Get the answer input, which could be select or input
+  const answerInput = document.getElementById('answerInput');
+  if (!answerInput || !answerInput.value.trim()) {
+    return; // Don't proceed if no valid input
+  }
+
+  const hiddenInput = document.createElement('input');
+  hiddenInput.type = 'hidden';
+  hiddenInput.name = questions[currentQuestion].name;
+  hiddenInput.value = answerInput.value.trim();
+  form.appendChild(hiddenInput);
+
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
+    updateQuestion();
+  } else {
+    form.submit();
+  }
+});
+
+// List of Indian universities for dropdown
+const universities = [
+  "Acharya Nagarjuna University",
+  "AIIMS",
+  "Aligarh Muslim University",
+  "Amity University",
+  "Andhra University",
+  "Anna University",
+  "Assam University",
+  "BITS Pilani",
+  "Banaras Hindu University",
+  "Bangalore University",
+  "Bharathiar University",
+  "Calcutta University",
+  "Christ University",
+  "Delhi University",
+  "IIIT Hyderabad",
+  "IIM Ahmedabad",
+  "IIM Bangalore",
+  "IIM Calcutta",
+  "IIM Lucknow",
+  "IIT Bombay",
+  "IIT Delhi",
+  "IIT Kanpur",
+  "IIT Kharagpur",
+  "IIT Madras",
+  "ISB Hyderabad",
+  "Jadavpur University",
+  "Jamia Millia Islamia",
+  "JNU",
+  "Kakatiya University",
+  "KIIT University",
+  "Lovely Professional University",
+  "Manipal University",
+  "Mumbai University",
+  "NIT Trichy",
+  "NIT Warangal",
+  "Osmania University",
+  "Panjab University",
+  "Pune University",
+  "SRM University",
+  "VIT University"
+];
+
+function updateQuestion() {
+  const q = questions[currentQuestion];
+  questionText.innerText = q.text;
+  questionIcon.src = `/static/assets/${q.icon}`;
+  
+  // Clear previous input
+  const container = document.getElementById('inputContainer');
+  container.innerHTML = '';
+  
+  if (q.name === 'university') {
+    // Special case for university selection - create dropdown
+    const select = document.createElement('select');
+    select.id = 'answerInput';
+    select.name = q.name;
+    select.required = true;
+    select.style.width = '100%';
+    select.style.padding = '0.8rem';
+    select.style.borderRadius = '10px';
+    select.style.fontFamily = "'Press Start 2P', cursive";
+    select.style.fontSize = '0.7rem';
+    select.style.border = '2px solid black';
+    select.style.background = 'black';
+    select.style.color = 'white';
+    select.style.outline = 'none';
+    
+    // Add empty option
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'Select your university';
+    select.appendChild(emptyOption);
+    
+    // Add university options
+    universities.forEach(uni => {
+      const option = document.createElement('option');
+      option.value = uni;
+      option.textContent = uni;
+      select.appendChild(option);
+    });
+    
+    container.appendChild(select);
+  } else if (q.githubLogin) {
+    // GitHub login - just keep the button
+    container.innerHTML = ''; // No input needed, just the submit button
+  } else {
+    // Regular text input for other questions
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'answerInput';
+    input.name = q.name;
+    input.required = true;
+    input.placeholder = 'Type your answer...';
+    input.style.width = '100%';
+    input.style.padding = '0.8rem';
+    input.style.borderRadius = '10px';
+    input.style.fontFamily = "'Press Start 2P', cursive";
+    input.style.fontSize = '0.8rem';
+    input.style.border = '2px solid black';
+    input.style.background = 'black';
+    input.style.color = 'white';
+    input.style.outline = 'none';
+    
+    container.appendChild(input);
+  }
+  
+  // Update progress bar
+  progress.style.width = `${(currentQuestion) / (questions.length) * 100}%`;
+}
+
+// Initialize the first question when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  updateQuestion();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,3202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK | KnowledgeNexus</title>
+    
+    <!-- Import Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Quill Editor for Rich Text -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    
+    <style>
+        /* Base Styles - Matching existing styles */
+        :root {
+            --ink-black: #000000;
+            --ink-white: #ffffff;
+            --ink-gray-light: #f0f0f0;
+            --ink-gray-dark: #333333;
+            --ink-purple: #7b3eab;
+            --ink-purple-light: #9d65c9;
+            --ink-purple-dark: #5d2e82;
+            --ink-blue: #3f51b5;
+            --ink-green: #4caf50;
+            --ink-amber: #ffc107;
+            --ink-orange: #ff5722;
+            --ink-red: #f44336;
+            --ink-teal: #009688;
+            --pixel-size: 8px;
+            --menu-width: 250px;
+            --menu-collapsed-width: 60px;
+            --menu-transition: 0.3s ease;
+            --header-height: 80px;
+            --space-background: rgba(0, 0, 0, 0.85);
+            --star-color-1: #f8dda4;
+            --star-color-2: #c6e2ff;
+            --star-color-3: #ffb7b7;
+            --cosmos-purple: #3a1f5d;
+            --cosmos-blue: #283593;
+            --cosmos-dark: #111a33;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--ink-black);
+            color: var(--ink-white);
+            overflow-x: hidden;
+            min-height: 100vh;
+            image-rendering: pixelated;
+            position: relative;
+        }
+
+        h1, h2, h3, h4, h5, h6, .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+            line-height: 1.4;
+        }
+
+        /* Space Background Animation */
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--space-background);
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: var(--ink-white);
+            border-radius: 50%;
+            animation: twinkle var(--twinkle-duration, 3s) infinite ease-in-out;
+            opacity: var(--star-opacity, 0.7);
+        }
+
+        .star.size-1 {
+            width: 1px;
+            height: 1px;
+        }
+
+        .star.size-2 {
+            width: 2px;
+            height: 2px;
+        }
+
+        .star.size-3 {
+            width: 3px;
+            height: 3px;
+        }
+
+        .star.color-1 {
+            background-color: var(--star-color-1);
+        }
+
+        .star.color-2 {
+            background-color: var(--star-color-2);
+        }
+
+        .star.color-3 {
+            background-color: var(--star-color-3);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--star-opacity, 0.7); }
+            50% { opacity: 0.3; }
+        }
+
+        .falling-star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: var(--ink-white);
+            box-shadow: 0 0 5px 1px var(--ink-white);
+            opacity: 1;
+        }
+
+        .galaxy-cluster {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(123, 62, 171, 0.3) 0%, rgba(41, 25, 63, 0.1) 60%, rgba(0, 0, 0, 0) 80%);
+            border-radius: 50%;
+            opacity: 0.4;
+            mix-blend-mode: screen;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            height: var(--header-height);
+            border-bottom: 2px solid var(--ink-white);
+            position: relative;
+            background-color: var(--ink-black);
+            z-index: 100;
+        }
+
+        .ink-title {
+            font-family: 'Staatliches', cursive;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            margin-left: 80px;
+        }
+
+        .user-info {
+            margin-left: auto;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-btn, .dashboard-btn {
+            padding: 0.5rem 1rem;
+            background: var(--ink-white);
+            color: var(--ink-black);
+            text-decoration: none;
+            font-size: 0.7rem;
+            border-radius: 0;
+            cursor: pointer;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            /* Pixel-like effect */
+                            clip-path: polygon(
+                0 0, 
+                calc(100% - 2px) 0, 
+                100% 2px, 
+                100% 100%, 
+                2px 100%, 
+                0 calc(100% - 2px)
+            );
+        }
+
+        /* Achievement Notification */
+        .achievement-popup {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--ink-amber);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.5s;
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .achievement-popup.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--ink-amber);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--ink-black);
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 5px) 0, 
+                100% 5px, 
+                100% 100%, 
+                5px 100%, 
+                0 calc(100% - 5px)
+            );
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8rem;
+            color: var(--ink-amber);
+            margin-bottom: 0.3rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.7rem;
+            color: var(--ink-white);
+        }
+
+        /* Feedback notification */
+        .feedback-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: translateX(150%);
+            transition: transform 0.3s;
+        }
+
+        .feedback-notification.show {
+            transform: translateX(0);
+        }
+
+        .feedback-notification.success {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .feedback-notification.error {
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+        }
+
+        .feedback-notification.warning {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        /* Insight Tree Visualization */
+        .insight-tree-modal .modal-container {
+            max-width: 1000px;
+            width: 95%;
+        }
+
+        .insight-tree-container {
+            height: 600px;
+            background-color: rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .tree-node {
+            position: absolute;
+            background-color: var(--ink-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-white);
+            font-size: 0.6rem;
+            box-shadow: 0 0 10px rgba(123, 62, 171, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .tree-node:hover {
+            background-color: var(--ink-purple-light);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .tree-node.active {
+            border: 2px solid var(--ink-white);
+        }
+
+        .tree-node.core {
+            background-color: var(--ink-blue);
+            width: 80px;
+            height: 80px;
+        }
+
+        .tree-node.branch {
+            background-color: var(--ink-purple);
+            width: 60px;
+            height: 60px;
+        }
+
+        .tree-node.leaf {
+            background-color: var(--ink-teal);
+            width: 40px;
+            height: 40px;
+        }
+
+        .tree-connection {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.2);
+            transform-origin: 0 50%;
+            pointer-events: none;
+        }
+
+        .tree-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--ink-purple);
+            padding: 0.8rem;
+            max-width: 250px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 4px) 0, 
+                100% 4px, 
+                100% 100%, 
+                4px 100%, 
+                0 calc(100% - 4px)
+            );
+        }
+
+        .tree-tooltip-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+            color: var(--ink-purple-light);
+        }
+
+        .tree-tooltip-desc {
+            font-size: 0.6rem;
+            color: var(--ink-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .tree-tooltip-meta {
+            font-size: 0.55rem;
+            color: var(--ink-gray-light);
+        }
+
+        .insight-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.6rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-color.core {
+            background-color: var(--ink-blue);
+        }
+
+        .legend-color.branch {
+            background-color: var(--ink-purple);
+        }
+
+        .legend-color.leaf {
+            background-color: var(--ink-teal);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid var(--ink-white);
+                padding: 1rem;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .add-btn {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .question-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .galaxy-view {
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ink-title {
+                font-size: 2rem;
+                margin-left: 60px;
+            }
+            
+            .user-info {
+                font-size: 0.6rem;
+            }
+            
+            .modal-container {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            .sidebar-menu-item {
+                font-size: 0.6rem;
+            }
+            
+            .coin-balance {
+                font-size: 0.6rem;
+            }
+            
+            .quests-container {
+                flex-direction: column;
+            }
+            
+            .quest-card {
+                min-width: unset;
+                width: 100%;
+            }
+            
+            .activity-feed {
+                width: 100%;
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Space Background -->
+    <div class="space-background">
+        <div class="stars" id="starsContainer"></div>
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="pixel-heart" id="pixelHeart"></div>
+        <h1 class="ink-title">INK</h1>
+        <div class="user-info">
+            <span id="username">{{ user.username }}</span>
+            <a href="/dashboard" class="dashboard-btn">Dashboard</a>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="coin-balance" id="coinBalance">
+                <i class="fas fa-coins coin-icon"></i>
+                <span>Balance: <span id="coinAmount">0</span> coins</span>
+            </div>
+            
+            <div class="user-level">
+                <div class="level-number">Lvl <span id="userLevel">5</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="--progress-width: 45%"></div>
+                </div>
+                <div class="progress-text"><span id="expPoints">450</span>/<span id="nextLevelPoints">1000</span></div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Knowledge Areas</h3>
+                <div class="sidebar-menu-item active" data-filter="all">
+                    <i class="fas fa-globe"></i> All Categories
+                </div>
+                <div class="sidebar-menu-item" data-filter="computer-science">
+                    <i class="fas fa-laptop-code"></i> Computer Science
+                </div>
+                <div class="sidebar-menu-item" data-filter="data-science">
+                    <i class="fas fa-database"></i> Data Science
+                </div>
+                <div class="sidebar-menu-item" data-filter="business">
+                    <i class="fas fa-chart-line"></i> Business
+                </div>
+                <div class="sidebar-menu-item" data-filter="law">
+                    <i class="fas fa-balance-scale"></i> Law
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Question Types</h3>
+                <div class="sidebar-menu-item" data-status="all">
+                    <i class="fas fa-layer-group"></i> All Questions
+                </div>
+                <div class="sidebar-menu-item" data-status="unanswered">
+                    <i class="fas fa-question-circle"></i> Unanswered
+                </div>
+                <div class="sidebar-menu-item" data-status="answered">
+                    <i class="fas fa-check-circle"></i> Answered
+                </div>
+                <div class="sidebar-menu-item" data-status="featured">
+                    <i class="fas fa-star"></i> Featured
+                </div>
+                <div class="sidebar-menu-item" data-status="trending">
+                    <i class="fas fa-fire"></i> Trending
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Complexity Level</h3>
+                <div class="checkbox-container">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="complexity" value="1" checked> Beginner
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="complexity" value="2" checked> Elementary
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="complexity" value="3" checked> Intermediate
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="complexity" value="4" checked> Advanced
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="complexity" value="5" checked> Expert
+                    </label>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">My Activity</h3>
+                <div class="sidebar-menu-item" data-activity="my-questions">
+                    <i class="fas fa-question"></i> My Questions
+                </div>
+                <div class="sidebar-menu-item" data-activity="my-answers">
+                    <i class="fas fa-comment-dots"></i> My Answers
+                </div>
+                <div class="sidebar-menu-item" data-activity="following">
+                    <i class="fas fa-bookmark"></i> Following
+                </div>
+                <div class="sidebar-menu-item" data-activity="my-quests">
+                    <i class="fas fa-tasks"></i> My Quests
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Explore</h3>
+                <div class="sidebar-menu-item" id="insightTreeBtn">
+                    <i class="fas fa-project-diagram"></i> Insight Tree
+                </div>
+                <div class="sidebar-menu-item" id="knowledgeMapBtn">
+                    <i class="fas fa-map"></i> Knowledge Map
+                </div>
+                <div class="sidebar-menu-item" id="semesterPreviewBtn">
+                    <i class="fas fa-calendar-alt"></i> Semester Preview
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Sort By:</span>
+                    <select class="filter-select" id="sortSelect">
+                        <option value="newest">Newest First</option>
+                        <option value="trending">Trending</option>
+                        <option value="votes">Most Voted</option>
+                        <option value="answers">Most Answered</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search questions...">
+                </div>
+                
+                <button class="add-btn" id="askQuestionBtn">
+                    <i class="fas fa-plus"></i> Ask Question
+                </button>
+            </div>
+            
+            <!-- Knowledge Galaxy Visualization -->
+            <div class="galaxy-view">
+                <div class="galaxy-container" id="galaxyContainer">
+                    <!-- Galaxy elements will be added dynamically -->
+                </div>
+                <div class="galaxy-zoom-controls">
+                    <div class="galaxy-btn" id="zoomIn"><i class="fas fa-plus"></i></div>
+                    <div class="galaxy-btn" id="zoomOut"><i class="fas fa-minus"></i></div>
+                    <div class="galaxy-btn" id="resetZoom"><i class="fas fa-sync-alt"></i></div>
+                </div>
+                <div class="galaxy-tooltip" id="galaxyTooltip"></div>
+            </div>
+            
+            <!-- Knowledge Quests Section -->
+            <div class="knowledge-quests">
+                <h3 class="quests-title">Active Knowledge Quests</h3>
+                <div class="quests-container" id="questsContainer">
+                    <!-- Quests will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Question Cards -->
+            <div class="question-container" id="questionContainer">
+                <!-- Questions will be loaded dynamically -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer">
+                <!-- Pagination will be generated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Feed -->
+    <button class="toggle-activity" id="toggleActivity">
+        <i class="fas fa-bell"></i>
+    </button>
+    
+    <div class="activity-feed" id="activityFeed">
+        <h3 class="activity-title">Recent Activity</h3>
+        <div class="activity-list" id="activityList">
+            <!-- Activity items will be dynamically added here -->
+        </div>
+    </div>
+    
+    <!-- Ask Question Modal -->
+    <div class="modal-overlay" id="askQuestionModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Ask a Question</h2>
+                <button class="modal-close" id="closeAskModal">&times;</button>
+            </div>
+            
+            <div class="modal-content">
+                <form id="questionForm">
+                    <div class="question-form-row">
+                        <label class="form-label" for="questionTitle">Title</label>
+                        <input type="text" id="questionTitle" class="form-input" placeholder="Be specific and clear in your question title" required>
+                        <div class="form-help">A good title makes it easier for the right people to find and answer your question</div>
+                    </div>
+                    
+                    <div class="question-form-row">
+                        <label class="form-label" for="questionCategory">Category</label>
+                        <select id="questionCategory" class="form-select" required>
+                            <option value="">Select a category</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            <option value="Business Administration">Business Administration</option>
+                            <option value="Economics">Economics</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Psychology">Psychology</option>
+                            <option value="English Literature">English Literature</option>
+                            <option value="History">History</option>
+                            <option value="Political Science">Political Science</option>
+                            <option value="Law">Law</option>
+                            <option value="Mass Communication">Mass Communication</option>
+                            <option value="Hotel Management">Hotel Management</option>
+                            <option value="Fashion Design">Fashion Design</option>
+                        </select>
+                        <div class="form-help">Categorize your question to help others find it</div>
+                    </div>
+                    
+                    <div class="question-form-row">
+                        <label class="form-label">Complexity Level</label>
+                        <div class="complexity-selector">
+                            <div class="complexity-option" data-complexity="1">
+                                <div class="complexity-indicator">
+                                    <div class="complexity-dot active"></div>
+                                </div>
+                                <div class="complexity-label">Beginner</div>
+                            </div>
+                            <div class="complexity-option" data-complexity="2">
+                                <div class="complexity-indicator">
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                </div>
+                                <div class="complexity-label">Elementary</div>
+                            </div>
+                            <div class="complexity-option selected" data-complexity="3">
+                                <div class="complexity-indicator">
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                </div>
+                                <div class="complexity-label">Intermediate</div>
+                            </div>
+                            <div class="complexity-option" data-complexity="4">
+                                <div class="complexity-indicator">
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                </div>
+                                <div class="complexity-label">Advanced</div>
+                            </div>
+                            <div class="complexity-option" data-complexity="5">
+                                <div class="complexity-indicator">
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                    <div class="complexity-dot active"></div>
+                                </div>
+                                <div class="complexity-label">Expert</div>
+                            </div>
+                        </div>
+                        <div class="form-help">Select the complexity level that best matches your question</div>
+                    </div>
+                    
+                    <div class="question-form-row">
+                        <label class="form-label" for="questionContent">Description</label>
+                        <div id="questionEditor" class="quill-editor"></div>
+                        <div class="form-help">Include all the information needed to answer your question</div>
+                    </div>
+                    
+                    <div class="question-form-row">
+                        <label class="form-label" for="questionTags">Tags</label>
+                        <div class="tag-input-container" id="tagContainer">
+                            <input type="text" id="tagInput" class="tag-input" placeholder="Add up to 5 tags...">
+                        </div>
+                        <div id="tagSuggestions" class="tag-suggestions"></div>
+                        <div class="form-help">Add relevant tags to help categorize your question (max 5)</div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="cancel-btn" id="cancelAskBtn">Cancel</button>
+                <button type="submit" class="submit-btn" id="submitQuestionBtn">Post Question</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Question Detail Modal -->
+    <div class="modal-overlay" id="questionDetailModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Question Details</h2>
+                <button class="modal-close" id="closeDetailModal">&times;</button>
+            </div>
+            
+            <div id="questionDetailContent">
+                <!-- Content will be dynamically loaded -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Insight Tree Modal -->
+    <div class="modal-overlay" id="insightTreeModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Knowledge Insight Tree</h2>
+                <button class="modal-close" id="closeInsightModal">&times;</button>
+            </div>
+            
+            <div class="modal-content">
+                <div class="insight-tree-container" id="insightTreeContainer">
+                    <!-- Tree visualization will be generated dynamically -->
+                </div>
+                
+                <div class="insight-legend">
+                    <div class="legend-item">
+                        <div class="legend-color core"></div>
+                        <span>Core Concepts</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color branch"></div>
+                        <span>Branches</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color leaf"></div>
+                        <span>Specialized Topics</span>
+                    </div>
+                </div>
+                
+                <p style="text-align: center; font-size: 0.7rem; margin-top: 1rem;">
+                    Explore the connections between knowledge areas. Click on nodes to see related questions.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievement Notification -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-icon">
+            <i class="fas fa-award"></i>
+        </div>
+        <div class="achievement-info">
+            <h3 class="achievement-title">Achievement Unlocked!</h3>
+            <p class="achievement-desc" id="achievementDesc">You've earned the "Knowledge Seeker" badge!</p>
+        </div>
+    </div>
+    
+    <!-- Feedback Notification -->
+    <div class="feedback-notification" id="feedbackNotification">
+        <i class="fas fa-check-circle"></i>
+        <span id="feedbackMessage">Success message here</span>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let currentUser = null;
+            let questions = [];
+            let quests = [];
+            let currentQuestion = null;
+            let selectedComplexity = 3;
+            let currentPage = 1;
+            let itemsPerPage = 9;
+            let currentFilter = 'all';
+            let currentStatus = 'all';
+            let currentSort = 'newest';
+            let currentSearch = '';
+            let selectedComplexities = [1, 2, 3, 4, 5]; // All complexity levels selected by default
+            let galaxyScale = 1;
+            let galaxyDragging = false;
+            let galaxyOffset = { x: 0, y: 0 };
+            let questionEditor = null;
+            let answerEditor = null;
+            let currentTags = [];
+            
+            // DOM Elements
+            const pixelHeart = document.getElementById('pixelHeart');
+            const usernameElement = document.getElementById('username');
+            const coinBalanceElement = document.getElementById('coinAmount');
+            const userLevelElement = document.getElementById('userLevel');
+            const expPointsElement = document.getElementById('expPoints');
+            const nextLevelPointsElement = document.getElementById('nextLevelPoints');
+            const questionContainer = document.getElementById('questionContainer');
+            const questsContainer = document.getElementById('questsContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+            const askQuestionBtn = document.getElementById('askQuestionBtn');
+            const askQuestionModal = document.getElementById('askQuestionModal');
+            const closeAskModal = document.getElementById('closeAskModal');
+            const cancelAskBtn = document.getElementById('cancelAskBtn');
+            const questionForm = document.getElementById('questionForm');
+            const submitQuestionBtn = document.getElementById('submitQuestionBtn');
+            const complexityOptions = document.querySelectorAll('.complexity-option');
+            const questionDetailModal = document.getElementById('questionDetailModal');
+            const closeDetailModal = document.getElementById('closeDetailModal');
+            const questionDetailContent = document.getElementById('questionDetailContent');
+            const galaxyContainer = document.getElementById('galaxyContainer');
+            const galaxyTooltip = document.getElementById('galaxyTooltip');
+            const toggleActivity = document.getElementById('toggleActivity');
+            const activityFeed = document.getElementById('activityFeed');
+            const activityList = document.getElementById('activityList');
+            const insightTreeBtn = document.getElementById('insightTreeBtn');
+            const insightTreeModal = document.getElementById('insightTreeModal');
+            const closeInsightModal = document.getElementById('closeInsightModal');
+            const insightTreeContainer = document.getElementById('insightTreeContainer');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const resetZoomBtn = document.getElementById('resetZoom');
+            const tagContainer = document.getElementById('tagContainer');
+            const tagInput = document.getElementById('tagInput');
+            const tagSuggestions = document.getElementById('tagSuggestions');
+            const achievementPopup = document.getElementById('achievementPopup');
+            const achievementDesc = document.getElementById('achievementDesc');
+            const feedbackNotification = document.getElementById('feedbackNotification');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            
+            // Create Pixel Heart
+            const createPixelHeart = () => {
+                const heartPattern = [
+                    [0, 1, 0, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 1, 0, 0]
+                ];
+                
+                heartPattern.forEach((row, rowIndex) => {
+                    row.forEach((col, colIndex) => {
+                        if (col) {
+                            const div = document.createElement('div');
+                            div.className = 'heart-pixel';
+                            div.style.gridRow = rowIndex + 1;
+                            div.style.gridColumn = colIndex + 1;
+                            div.style.setProperty('--index', rowIndex + colIndex);
+                            pixelHeart.appendChild(div);
+                        }
+                    });
+                });
+            };
+            
+            // Initialize pixel heart
+            createPixelHeart();
+            
+            // Create Space Background
+            const createSpaceBackground = () => {
+                const starsContainer = document.getElementById('starsContainer');
+                const numStars = 150;
+                
+                // Create stars
+                for (let i = 0; i < numStars; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    
+                    // Random size
+                    const sizeClass = `size-${Math.floor(Math.random() * 3) + 1}`;
+                    star.classList.add(sizeClass);
+                    
+                    // Random color
+                    const colorClass = `color-${Math.floor(Math.random() * 3) + 1}`;
+                    if (Math.random() > 0.7) {
+                        star.classList.add(colorClass);
+                    }
+                    
+                    // Random position
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    star.style.left = `${left}%`;
+                    star.style.top = `${top}%`;
+                    
+                    // Random twinkle animation duration
+                    const twinkleDuration = 2 + Math.random() * 4;
+                    star.style.setProperty('--twinkle-duration', `${twinkleDuration}s`);
+                    
+                    // Random opacity
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    star.style.setProperty('--star-opacity', opacity);
+                    
+                    starsContainer.appendChild(star);
+                }
+                
+                // Create galaxy clusters
+                const numClusters = 5;
+                for (let i = 0; i < numClusters; i++) {
+                    const cluster = document.createElement('div');
+                    cluster.className = 'galaxy-cluster';
+                    
+                    // Random position
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    cluster.style.left = `${left}%`;
+                    cluster.style.top = `${top}%`;
+                    
+                    // Random size
+                    const size = 80 + Math.random() * 100;
+                    cluster.style.width = `${size}px`;
+                    cluster.style.height = `${size}px`;
+                    
+                    starsContainer.appendChild(cluster);
+                }
+                
+                // Animate falling stars occasionally
+                setInterval(() => {
+                    if (Math.random() > 0.7) {
+                        createFallingStar();
+                    }
+                }, 5000);
+            };
+            
+            // Create a falling star animation
+            const createFallingStar = () => {
+                const starsContainer = document.getElementById('starsContainer');
+                const star = document.createElement('div');
+                star.className = 'falling-star';
+                
+                // Random start position (top of screen)
+                const startLeft = Math.random() * 100;
+                star.style.left = `${startLeft}%`;
+                star.style.top = '0';
+                
+                starsContainer.appendChild(star);
+                
+                // Animate the falling
+                let top = 0;
+                let left = startLeft;
+                
+                const interval = setInterval(() => {
+                    top += 0.5;
+                    left += 0.2;
+                    star.style.top = `${top}%`;
+                    star.style.left = `${left}%`;
+                    
+                    // Remove when it goes off screen
+                    if (top > 100 || left > 100) {
+                        clearInterval(interval);
+                        star.remove();
+                    }
+                }, 20);
+            };
+            
+            // Initialize space background
+            createSpaceBackground();
+            
+            // Show feedback notification
+            const showFeedback = (message, type = 'success') => {
+                feedbackMessage.textContent = message;
+                feedbackNotification.className = `feedback-notification ${type}`;
+                
+                // Add show class to trigger animation
+                setTimeout(() => {
+                    feedbackNotification.classList.add('show');
+                }, 10);
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    feedbackNotification.classList.remove('show');
+                }, 3000);
+            };
+            
+            // Show achievement notification
+            const showAchievement = (message) => {
+                achievementDesc.textContent = message;
+                
+                // Show achievement popup
+                setTimeout(() => {
+                    achievementPopup.classList.add('show');
+                    
+                    // Hide after 5 seconds
+                    setTimeout(() => {
+                        achievementPopup.classList.remove('show');
+                    }, 5000);
+                }, 500);
+            };
+            
+            // Format date for display
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) {
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    if (diffHours === 0) {
+                        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+                    }
+                    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                } else if (diffDays < 7) {
+                    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+                } else {
+                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                }
+            };
+            
+            // Load user data
+            const loadUserData = () => {
+                fetch('/get-user-data')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            currentUser = data.user;
+                            
+                            // Update UI with user data
+                            usernameElement.textContent = currentUser.username;
+                            coinBalanceElement.textContent = currentUser.coins_balance;
+                            
+                            // Load questions after user data is loaded
+                            loadQuestions();
+                            loadQuests();
+                            
+                            // Initialize knowledge galaxy
+                            initKnowledgeGalaxy();
+                            
+                            // Load activity feed
+                            loadActivityFeed();
+                        } else {
+                            console.error('Failed to load user data:', data.message);
+                            showFeedback('Failed to load user data. Please refresh the page.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading user data:', error);
+                        showFeedback('Error loading user data. Please refresh the page.', 'error');
+                    });
+            };
+            
+            // Load questions
+            const loadQuestions = () => {
+                questionContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Mock data for now - in production, this would be an API call
+                setTimeout(() => {
+                    // Simulated database query
+                    // Filter questions based on current filter, status, and search
+                    let filteredQuestions = getMockQuestions();
+                    
+                    // Apply category filter
+                    if (currentFilter !== 'all') {
+                        filteredQuestions = filteredQuestions.filter(q => {
+                            const category = q.category.toLowerCase().replace(/\s+/g, '-');
+                            return category === currentFilter;
+                        });
+                    }
+                    
+                    // Apply status filter
+                    if (currentStatus !== 'all') {
+                        if (currentStatus === 'answered') {
+                            filteredQuestions = filteredQuestions.filter(q => q.is_answered);
+                        } else if (currentStatus === 'unanswered') {
+                            filteredQuestions = filteredQuestions.filter(q => !q.is_answered);
+                        } else if (currentStatus === 'featured') {
+                            filteredQuestions = filteredQuestions.filter(q => q.is_featured);
+                        } else if (currentStatus === 'trending') {
+                            filteredQuestions = filteredQuestions.filter(q => q.is_trending);
+                        }
+                    }
+                    
+                    // Apply complexity filter
+                    filteredQuestions = filteredQuestions.filter(q => selectedComplexities.includes(q.complexity));
+                    
+                    // Apply search filter
+                    if (currentSearch) {
+                        const searchTerms = currentSearch.toLowerCase().split(' ');
+                        filteredQuestions = filteredQuestions.filter(q => {
+                            const titleAndContent = (q.title + ' ' + q.content).toLowerCase();
+                            return searchTerms.every(term => titleAndContent.includes(term));
+                        });
+                    }
+                    
+                    // Apply sorting
+                    if (currentSort === 'newest') {
+                        filteredQuestions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    } else if (currentSort === 'trending') {
+                        filteredQuestions.sort((a, b) => b.view_count - a.view_count);
+                    } else if (currentSort === 'votes') {
+                        filteredQuestions.sort((a, b) => b.upvotes - a.upvotes);
+                    } else if (currentSort === 'answers') {
+                        filteredQuestions.sort((a, b) => b.answer_count - a.answer_count);
+                    }
+                    
+                    // Get total and calculate pages
+                    const total = filteredQuestions.length;
+                    const totalPages = Math.ceil(total / itemsPerPage);
+                    
+                    // Apply pagination
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const paginatedQuestions = filteredQuestions.slice(startIndex, endIndex);
+                    
+                    questions = paginatedQuestions;
+                    
+                    // Display questions
+                    displayQuestions(questions);
+                    setupPagination(total, currentPage, totalPages);
+                }, 500);
+            };
+            
+            // Display questions
+            const displayQuestions = (questionsToDisplay) => {
+                if (questionsToDisplay.length === 0) {
+                    questionContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>No questions found matching your criteria.</p>
+                            <p>Try adjusting your filters or ask a new question!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                questionsToDisplay.forEach(question => {
+                    // Card classes for special states
+                    let cardClasses = 'question-card';
+                    if (isNewQuestion(question.created_at)) {
+                        cardClasses += ' new';
+                    }
+                    if (question.is_trending) {
+                        cardClasses += ' hot';
+                    }
+                    if (question.is_featured) {
+                        cardClasses += ' featured';
+                    }
+                    
+                    // Format tags
+                    let tagsHtml = '';
+                    question.tags.forEach(tag => {
+                        tagsHtml += `
+                            <span class="question-tag">
+                                <i class="fas fa-tag"></i> ${tag}
+                            </span>
+                        `;
+                    });
+                    
+                    // Complexity dots
+                    let complexityHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        complexityHtml += `
+                            <div class="complexity-dot ${i <= question.complexity ? 'active' : ''}"></div>
+                        `;
+                    }
+                    
+                    html += `
+                        <div class="${cardClasses}" data-id="${question._id}">
+                            <div class="question-header">
+                                <h3 class="question-title">${question.title}</h3>
+                                <div class="question-meta">
+                                    <span class="question-category">${question.category}</span>
+                                    <div class="complexity-indicator">
+                                        ${complexityHtml}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="question-body">
+                                <div class="question-preview">${stripHtml(question.content)}</div>
+                                <div class="question-tags">
+                                    ${tagsHtml}
+                                </div>
+                            </div>
+                            <div class="question-footer">
+                                <div class="question-stats">
+                                    <div class="question-stat">
+                                        <i class="fas fa-eye"></i> ${question.view_count}
+                                    </div>
+                                    <div class="question-stat">
+                                        <i class="fas fa-comment-dots"></i> ${question.answer_count}
+                                    </div>
+                                    <div class="question-stat">
+                                        <i class="fas fa-arrow-up"></i> ${question.upvotes}
+                                    </div>
+                                </div>
+                                ${question.is_answered ? '<span class="answered-badge"><i class="fas fa-check"></i> Answered</span>' : ''}
+                                ${question.is_trending ? '<span class="trending-badge"><i class="fas fa-fire"></i> Trending</span>' : ''}
+                                <div class="question-author">
+                                    <div class="author-avatar">
+                                        ${question.author.avatar_id ? `<img src="/static/avatars/${question.author.avatar_id}.png" alt="Avatar">` : question.author.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span class="author-name">${question.author.username}</span>
+                                    <span class="author-level">Lvl ${question.author.level || 1}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                questionContainer.innerHTML = html;
+                
+                // Add click event to each question card
+                document.querySelectorAll('.question-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const questionId = card.dataset.id;
+                        openQuestionDetail(questionId);
+                    });
+                });
+            };
+            
+            // Load quests
+            const loadQuests = () => {
+                // Mock quests data for now
+                const mockQuests = [
+                    {
+                        _id: 'q1',
+                        title: 'Data Structures Mastery',
+                        description: 'Master the fundamentals of data structures through a series of questions.',
+                        progress: 30,
+                        total_reward: 150,
+                        difficulty: 'intermediate'
+                    },
+                    {
+                        _id: 'q2',
+                        title: 'Algorithm Challenge',
+                        description: 'Solve algorithmic problems of increasing difficulty to earn rewards.',
+                        progress: 60,
+                        total_reward: 200,
+                        difficulty: 'advanced'
+                    },
+                    {
+                        _id: 'q3',
+                        title: 'Web Development Basics',
+                        description: 'Answer questions about HTML, CSS, and JavaScript fundamentals.',
+                        progress: 45,
+                        total_reward: 100,
+                        difficulty: 'beginner'
+                    },
+                    {
+                        _id: 'q4',
+                        title: 'Database Design',
+                        description: 'Learn about database normalization and SQL through guided questions.',
+                        progress: 15,
+                        total_reward: 180,
+                        difficulty: 'intermediate'
+                    },
+                    {
+                        _id: 'q5',
+                        title: 'Machine Learning Path',
+                        description: 'Explore core concepts in machine learning from basics to advanced topics.',
+                        progress: 5,
+                        total_reward: 250,
+                        difficulty: 'expert'
+                    }
+                ];
+                
+                quests = mockQuests;
+                
+                let html = '';
+                quests.forEach(quest => {
+                    // Determine difficulty class
+                    let difficultyClass = '';
+                    if (quest.difficulty === 'advanced') {
+                        difficultyClass = 'advanced';
+                    } else if (quest.difficulty === 'expert') {
+                        difficultyClass = 'expert';
+                    }
+                    
+                    html += `
+                        <div class="quest-card" data-id="${quest._id}">
+                            <h4 class="quest-title">${quest.title}</h4>
+                            <p class="quest-description">${quest.description}</p>
+                            <div class="quest-progress">
+                                <div class="quest-progress-fill" style="--progress-width: ${quest.progress}%"></div>
+                            </div>
+                            <div class="quest-stats">
+                                <div class="quest-reward">
+                                    <i class="fas fa-coins"></i> ${quest.total_reward}
+                                </div>
+                                <div class="quest-difficulty ${difficultyClass}">
+                                    ${quest.difficulty.toUpperCase()}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                questsContainer.innerHTML = html;
+                
+                // Add click event to each quest card
+                document.querySelectorAll('.quest-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const questId = card.dataset.id;
+                        showFeedback(`Quest details for ${questId} will be available soon!`);
+                        // In real implementation, open quest details
+                    });
+                });
+            };
+            
+            // Load activity feed
+            const loadActivityFeed = () => {
+                // Mock activity data
+                const activities = [
+                    {
+                        type: 'new-question',
+                        content: 'Aditya posted a new question: "How to implement a balanced binary search tree?"',
+                        time: '5 minutes ago'
+                    },
+                    {
+                        type: 'new-answer',
+                        content: 'Priya answered your question about database normalization.',
+                        time: '15 minutes ago'
+                    },
+                    {
+                        type: 'achievement',
+                        content: 'You earned the "Helpful Answers" badge for receiving 10 upvotes!',
+                        time: '1 hour ago'
+                    },
+                    {
+                        type: 'new-answer',
+                        content: 'Rahul answered a question you're following about object-oriented principles.',
+                        time: '2 hours ago'
+                    },
+                    {
+                        type: 'new-question',
+                        content: 'Ananya posted a question in Computer Science: "What's the difference between thread and process?"',
+                        time: '3 hours ago'
+                    },
+                    {
+                        type: 'achievement',
+                        content: 'You completed the "Data Structures Basics" quest and earned 50 coins!',
+                        time: '5 hours ago'
+                    }
+                ];
+                
+                let html = '';
+                activities.forEach(activity => {
+                    html += `
+                        <div class="activity-item ${activity.type}">
+                            ${activity.content}
+                            <div class="activity-meta">
+                                <span class="activity-time">${activity.time}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                activityList.innerHTML = html;
+            };
+            
+            // Initialize Knowledge Galaxy
+            const initKnowledgeGalaxy = () => {
+                // Mock data for the knowledge galaxy
+                const categories = [
+                    { id: 'cs', name: 'Computer Science', x: 50, y: 30 },
+                    { id: 'ds', name: 'Data Science', x: 70, y: 50 },
+                    { id: 'ai', name: 'AI & ML', x: 80, y: 20 },
+                    { id: 'web', name: 'Web Development', x: 30, y: 40 },
+                    { id: 'db', name: 'Databases', x: 60, y: 60 },
+                    { id: 'mobile', name: 'Mobile Dev', x: 20, y: 70 },
+                    { id: 'security', name: 'Cybersecurity', x: 40, y: 80 }
+                ];
+                
+                // Add clusters (categories)
+                let html = '';
+                categories.forEach(category => {
+                    html += `
+                        <div class="category-cluster" data-id="${category.id}" style="left: ${category.x}%; top: ${category.y}%;">
+                            ${category.name}
+                        </div>
+                    `;
+                });
+                
+                // Add question nodes
+                getMockQuestions().forEach((question, index) => {
+                    if (index > 20) return; // Limit to 20 questions for performance
+                    
+                    // Determine question type class
+                    let nodeClass = 'question-node';
+                    if (question.is_answered) {
+                        nodeClass += ' answered';
+                    } else if (question.is_trending) {
+                        nodeClass += ' trending';
+                    } else {
+                        nodeClass += ' unanswered';
+                    }
+                    
+                    if (question.complexity >= 4) {
+                        nodeClass += ' advanced';
+                    }
+                    
+                    // Random position with some clustering based on category
+                    const category = categories.find(c => c.id === getCategoryId(question.category)) || categories[0];
+                    const x = category.x + (Math.random() * 30 - 15);
+                    const y = category.y + (Math.random() * 30 - 15);
+                    
+                    // Node size based on activity (views, answers)
+                    const baseSize = 8;
+                    const activitySize = Math.min(question.view_count / 10 + question.answer_count, 10);
+                    const size = baseSize + activitySize;
+                    
+                    html += `
+                        <div class="${nodeClass}" data-id="${question._id}" 
+                            style="left: ${x}%; top: ${y}%; width: ${size}px; height: ${size}px;"
+                            data-title="${question.title}"
+                            data-category="${question.category}"
+                            data-answers="${question.answer_count}"
+                            data-views="${question.view_count}">
+                        </div>
+                    `;
+                });
+                
+                // Add constellation lines to connect related questions
+                // This would be more complex with real data to show actual relationships
+                
+                galaxyContainer.innerHTML = html;
+                
+                // Add event listeners to nodes
+                document.querySelectorAll('.question-node').forEach(node => {
+                    node.addEventListener('mouseover', (e) => {
+                        const title = node.dataset.title;
+                        const category = node.dataset.category;
+                        const answers = node.dataset.answers;
+                        const views = node.dataset.views;
+                        
+                        // Position tooltip
+                        const rect = node.getBoundingClientRect();
+                        const galaxyRect = galaxyContainer.getBoundingClientRect();
+                        
+                        galaxyTooltip.innerHTML = `
+                            <strong>${title}</strong><br>
+                            ${category}<br>
+                            ${answers} answers · ${views} views
+                        `;
+                        
+                        galaxyTooltip.style.left = `${rect.left - galaxyRect.left + rect.width + 10}px`;
+                        galaxyTooltip.style.top = `${rect.top - galaxyRect.top}px`;
+                        galaxyTooltip.style.opacity = '1';
+                    });
+                    
+                    node.addEventListener('mouseout', () => {
+                        galaxyTooltip.style.opacity = '0';
+                    });
+                    
+                    node.addEventListener('click', () => {
+                        const questionId = node.dataset.id;
+                        openQuestionDetail(questionId);
+                    });
+                });
+                
+                // Add event listeners to category clusters
+                document.querySelectorAll('.category-cluster').forEach(cluster => {
+                    cluster.addEventListener('click', () => {
+                        const categoryId = cluster.dataset.id;
+                        // In a real implementation, filter questions by this category
+                        showFeedback(`Showing questions in category: ${cluster.textContent}`);
+                    });
+                });
+                
+                // Mouse controls for panning
+                let isDragging = false;
+                let startPos = { x: 0, y: 0 };
+                
+                galaxyContainer.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startPos = { x: e.clientX, y: e.clientY };
+                    galaxyContainer.style.cursor = 'grabbing';
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startPos.x;
+                    const dy = e.clientY - startPos.y;
+                    
+                    galaxyOffset.x += dx / galaxyScale;
+                    galaxyOffset.y += dy / galaxyScale;
+                    
+                    updateGalaxyTransform();
+                    
+                    startPos = { x: e.clientX, y: e.clientY };
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                    galaxyContainer.style.cursor = 'grab';
+                });
+                
+                // Zoom controls
+                zoomInBtn.addEventListener('click', () => {
+                    galaxyScale = Math.min(galaxyScale * 1.2, 3);
+                    updateGalaxyTransform();
+                });
+                
+                zoomOutBtn.addEventListener('click', () => {
+                    galaxyScale = Math.max(galaxyScale / 1.2, 0.5);
+                    updateGalaxyTransform();
+                });
+                
+                resetZoomBtn.addEventListener('click', () => {
+                    galaxyScale = 1;
+                    galaxyOffset = { x: 0, y: 0 };
+                    updateGalaxyTransform();
+                });
+                
+                // Initial setup
+                galaxyContainer.style.cursor = 'grab';
+            };
+            
+            // Update galaxy transform
+            const updateGalaxyTransform = () => {
+                galaxyContainer.style.transform = `scale(${galaxyScale}) translate(${galaxyOffset.x}px, ${galaxyOffset.y}px)`;
+            };
+            
+            // Get category ID from name
+            const getCategoryId = (categoryName) => {
+                const map = {
+                    'Computer Science': 'cs',
+                    'Data Science': 'ds',
+                    'Artificial Intelligence': 'ai',
+                    'Web Development': 'web',
+                    'Database Systems': 'db',
+                    'Mobile Development': 'mobile',
+                    'Cybersecurity': 'security'
+                };
+                
+                return map[categoryName] || 'cs';
+            };
+            
+            // Initialize Rich Text Editors
+            const initQuillEditor = () => {
+                questionEditor = new Quill('#questionEditor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['blockquote', 'code-block'],
+                            [{ 'header': 1 }, { 'header': 2 }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'script': 'sub' }, { 'script': 'super' }],
+                            [{ 'indent': '-1' }, { 'indent': '+1' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Describe your question in detail...'
+                });
+            };
+            
+            // Set up pagination
+            const setupPagination = (total, currentPage, totalPages) => {
+                // Clear previous pagination
+                paginationContainer.innerHTML = '';
+                
+                // Don't show pagination if there's only one page
+                if (totalPages <= 1) {
+                    return;
+                }
+                
+                // Create pagination buttons
+                let html = '';
+                
+                // Previous button
+                html += `
+                    <button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                            ${currentPage === 1 ? 'disabled' : `data-page="${currentPage - 1}"`}>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+                
+                // Page buttons
+                const maxButtons = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage + 1 < maxButtons) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                            ${i}
+                        </button>
+                    `;
+                }
+                
+                // Next button
+                html += `
+                    <button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}"
+                            ${currentPage === totalPages ? 'disabled' : `data-page="${currentPage + 1}"`}>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+                
+                paginationContainer.innerHTML = html;
+                
+                // Add click events to pagination buttons
+                document.querySelectorAll('.page-btn:not(.disabled):not(.active)').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const pageNum = parseInt(btn.dataset.page);
+                        currentPage = pageNum;
+                        loadQuestions();
+                        
+                        // Smooth scroll to top
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                });
+            };
+            
+            // Open question detail
+            const openQuestionDetail = (questionId) => {
+                // Show loading state
+                questionDetailContent.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Show modal
+                questionDetailModal.classList.add('show');
+                
+                // Find question from our loaded questions
+                const question = questions.find(q => q._id === questionId) || getMockQuestions().find(q => q._id === questionId);
+                
+                if (question) {
+                    currentQuestion = question;
+                    
+                    // In a real implementation, we would fetch the full question details from the server
+                    setTimeout(() => {
+                        displayQuestionDetail(question);
+                    }, 500);
+                } else {
+                    // Question not found
+                    questionDetailContent.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>Question not found.</p>
+                        </div>
+                    `;
+                }
+            };
+            
+            // Display question detail
+            const displayQuestionDetail = (question) => {
+                // Format tags
+                let tagsHtml = '';
+                question.tags.forEach(tag => {
+                    tagsHtml += `
+                        <span class="question-tag">
+                            <i class="fas fa-tag"></i> ${tag}
+                        </span>
+                    `;
+                });
+                
+                // Get answers for this question (mock data for now)
+                const answers = getMockAnswers(question._id);
+                
+                // Build HTML for question detail
+                let html = `
+                    <div class="question-detail-header">
+                        <h3 class="detail-title">${question.title}</h3>
+                        <div class="detail-meta">
+                            <span class="detail-category">${question.category}</span>
+                            <span>Asked ${formatDate(question.created_at)}</span>
+                        </div>
+                        <div class="detail-tags">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-content">
+                        ${question.content}
+                    </div>
+                    
+                    <div class="detail-actions">
+                        <button class="action-btn upvote-btn" id="upvoteQuestion">
+                            <i class="fas fa-arrow-up"></i> Upvote (${question.upvotes})
+                        </button>
+                        <button class="action-btn follow-btn" id="followQuestion">
+                            <i class="fas fa-bookmark"></i> Follow
+                        </button>
+                        <button class="action-btn convert-btn" id="convertToBounty">
+                            <i class="fas fa-coins"></i> Convert to Bounty
+                        </button>
+                        <button class="action-btn report-btn" id="reportQuestion">
+                            <i class="fas fa-flag"></i> Report
+                        </button>
+                    </div>
+                `;
+                
+                // Add answers section
+                html += `
+                    <div class="answers-section">
+                        <div class="answers-header">
+                            <h3 class="answers-title">Answers</h3>
+                            <span class="answers-count">${answers.length} answer${answers.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        
+                        <div class="answers-list">
+                `;
+                
+                // Add each answer
+                answers.forEach(answer => {
+                    const isAccepted = answer.is_accepted;
+                    const upvoted = answer.user_vote === 'up';
+                    const downvoted = answer.user_vote === 'down';
+                    
+                    html += `
+                        <div class="answer-item ${isAccepted ? 'accepted' : ''}" data-id="${answer._id}">
+                            <div class="answer-header">
+                                <div class="answer-author">
+                                    <div class="author-avatar">
+                                        ${answer.author.avatar_id ? `<img src="/static/avatars/${answer.author.avatar_id}.png" alt="Avatar">` : answer.author.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span class="author-name">${answer.author.username}</span>
+                                    ${answer.author.expertise ? `<span class="author-badge expertise-badge">${answer.author.expertise}</span>` : ''}
+                                    ${answer.is_verified ? `<span class="author-badge verified-badge">Verified Answer</span>` : ''}
+                                </div>
+                                <span class="answer-date">${formatDate(answer.created_at)}</span>
+                            </div>
+                            
+                            <div class="answer-content">
+                                ${answer.content}
+                            </div>
+                            
+                            <div class="answer-actions">
+                                <div class="vote-buttons">
+                                    <button class="vote-btn ${upvoted ? 'upvoted' : ''}" data-vote="up" data-id="${answer._id}">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </button>
+                                    <span class="vote-count">${answer.upvotes - answer.downvotes}</span>
+                                    <button class="vote-btn ${downvoted ? 'downvoted' : ''}" data-vote="down" data-id="${answer._id}">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="answer-options">
+                                    <button class="answer-option-btn comment-btn" data-id="${answer._id}">
+                                        <i class="fas fa-comment"></i> Comment
+                                    </button>
+                                    ${question.author._id === currentUser._id && !isAccepted ? `
+                                        <button class="answer-option-btn accept-btn" data-id="${answer._id}">
+                                            <i class="fas fa-check"></i> Accept
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="comments-section" id="comments-${answer._id}">
+                                <div class="comments-list">
+                                    ${answer.comments && answer.comments.length > 0 ? answer.comments.map(comment => `
+                                        <div class="comment-item">
+                                            <div class="comment-header">
+                                                <span>${comment.author.username}</span>
+                                                <span>${formatDate(comment.created_at)}</span>
+                                            </div>
+                                            <div class="comment-content">
+                                                ${comment.content}
+                                            </div>
+                                        </div>
+                                    `).join('') : '<p>No comments yet.</p>'}
+                                </div>
+                                
+                                <form class="comment-form" data-answer-id="${answer._id}">
+                                    <input type="text" class="comment-input" placeholder="Add a comment...">
+                                    <button type="submit" class="answer-option-btn">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Close answers list and add form for new answer
+                html += `
+                        </div>
+                    </div>
+                    
+                    <div class="add-answer-section">
+                        <h3 class="add-answer-title">Your Answer</h3>
+                        <div id="answerEditor" class="quill-editor"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="submit-btn" id="submitAnswerBtn">Post Your Answer</button>
+                        </div>
+                    </div>
+                `;
+                
+                questionDetailContent.innerHTML = html;
+                
+                // Initialize answer editor
+                answerEditor = new Quill('#answerEditor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['blockquote', 'code-block'],
+                            [{ 'header': 1 }, { 'header': 2 }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'script': 'sub' }, { 'script': 'super' }],
+                            [{ 'indent': '-1' }, { 'indent': '+1' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Write your answer here...'
+                });
+                
+                // Setup event listeners for the question detail view
+                setupQuestionDetailEvents();
+            };
+            
+            // Setup event listeners for question detail
+            const setupQuestionDetailEvents = () => {
+                // Upvote question button
+                const upvoteQuestionBtn = document.getElementById('upvoteQuestion');
+                if (upvoteQuestionBtn) {
+                    upvoteQuestionBtn.addEventListener('click', () => {
+                        // In a real implementation, send API request to upvote
+                        showFeedback('Question upvoted!');
+                        upvoteQuestionBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Upvoted (${currentQuestion.upvotes + 1})`;
+                        upvoteQuestionBtn.disabled = true;
+                    });
+                }
+                
+                // Follow question button
+                const followQuestionBtn = document.getElementById('followQuestion');
+                if (followQuestionBtn) {
+                    followQuestionBtn.addEventListener('click', () => {
+                        // Toggle follow state
+                        const isFollowing = followQuestionBtn.classList.contains('active');
+                        
+                        if (isFollowing) {
+                            followQuestionBtn.classList.remove('active');
+                            followQuestionBtn.innerHTML = '<i class="fas fa-bookmark"></i> Follow';
+                            showFeedback('Unfollowed question');
+                        } else {
+                            followQuestionBtn.classList.add('active');
+                            followQuestionBtn.innerHTML = '<i class="fas fa-bookmark"></i> Following';
+                            showFeedback('Now following this question');
+                        }
+                    });
+                }
+                
+                // Convert to bounty button
+                const convertToBountyBtn = document.getElementById('convertToBounty');
+                if (convertToBountyBtn) {
+                    convertToBountyBtn.addEventListener('click', () => {
+                        showFeedback('This feature will be available soon!', 'warning');
+                    });
+                }
+                
+                // Report question button
+                const reportQuestionBtn = document.getElementById('reportQuestion');
+                if (reportQuestionBtn) {
+                    reportQuestionBtn.addEventListener('click', () => {
+                        showFeedback('Question reported to moderators', 'warning');
+                    });
+                }
+                
+                // Submit answer button
+                const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+                if (submitAnswerBtn) {
+                    submitAnswerBtn.addEventListener('click', () => {
+                        const answerContent = answerEditor.root.innerHTML;
+                        
+                        if (answerContent === '<p><br></p>' || answerContent === '') {
+                            showFeedback('Please enter your answer', 'error');
+                            return;
+                        }
+                        
+                        // In a real implementation, send API request to save answer
+                        showFeedback('Your answer has been posted!');
+                        
+                        // Close the modal after submitting
+                        questionDetailModal.classList.remove('show');
+                        
+                        // Show achievement for first answer
+                        setTimeout(() => {
+                            showAchievement('You\'ve earned the "First Answer" badge!');
+                        }, 1000);
+                    });
+                }
+                
+                // Vote buttons for answers
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const voteType = btn.dataset.vote;
+                        const answerId = btn.dataset.id;
+                        const voteCount = btn.parentElement.querySelector('.vote-count');
+                        
+                        // Check if already voted this type
+                        const isActive = btn.classList.contains(voteType === 'up' ? 'upvoted' : 'downvoted');
+                        
+                        // Remove any existing vote
+                        btn.parentElement.querySelector(`.vote-btn[data-vote="up"]`).classList.remove('upvoted');
+                        btn.parentElement.querySelector(`.vote-btn[data-vote="down"]`).classList.remove('downvoted');
+                        
+                        if (!isActive) {
+                            // Add new vote
+                            btn.classList.add(voteType === 'up' ? 'upvoted' : 'downvoted');
+                            
+                            // Update vote count
+                            const currentCount = parseInt(voteCount.textContent);
+                            voteCount.textContent = voteType === 'up' ? currentCount + 1 : currentCount - 1;
+                            
+                            showFeedback(`Vote recorded!`);
+                        } else {
+                            // Remove vote (already voted, so this is like undoing)
+                            showFeedback(`Vote removed`);
+                        }
+                    });
+                });
+                
+                // Comment buttons
+                document.querySelectorAll('.comment-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const answerId = btn.dataset.id;
+                        const commentsSection = document.getElementById(`comments-${answerId}`);
+                        
+                        if (commentsSection.classList.contains('active')) {
+                            commentsSection.classList.remove('active');
+                        } else {
+                            commentsSection.classList.add('active');
+                        }
+                    });
+                });
+                
+                // Comment form submission
+                document.querySelectorAll('.comment-form').forEach(form => {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        
+                        const answerId = form.dataset.answerId;
+                        const input = form.querySelector('.comment-input');
+                        const commentText = input.value.trim();
+                        
+                        if (!commentText) {
+                            showFeedback('Please enter a comment', 'error');
+                            return;
+                        }
+                        
+                        // In a real implementation, send API request to save comment
+                        showFeedback('Comment added!');
+                        
+                        // Clear input
+                        input.value = '';
+                        
+                        // Update comments list (in a real implementation, this would fetch updated comments)
+                        const commentsList = document.querySelector(`#comments-${answerId} .comments-list`);
+                        const newComment = document.createElement('div');
+                        newComment.className = 'comment-item';
+                        newComment.innerHTML = `
+                            <div class="comment-header">
+                                <span>${currentUser.username}</span>
+                                <span>Just now</span>
+                            </div>
+                            <div class="comment-content">
+                                ${commentText}
+                            </div>
+                        `;
+                        
+                        commentsList.innerHTML = '';
+                        commentsList.appendChild(newComment);
+                    });
+                });
+                
+                // Accept answer buttons
+                document.querySelectorAll('.accept-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const answerId = btn.dataset.id;
+                        
+                        // In a real implementation, send API request to accept answer
+                        showFeedback('Answer accepted as solution!');
+                        
+                        // Update UI to show accepted answer
+                        document.querySelectorAll('.answer-item').forEach(item => {
+                            item.classList.remove('accepted');
+                        });
+                        
+                        const answerItem = document.querySelector(`.answer-item[data-id="${answerId}"]`);
+                        answerItem.classList.add('accepted');
+                        
+                        // Update current question data
+                        currentQuestion.is_answered = true;
+                        
+                        // Show achievement for accepting first answer
+                        setTimeout(() => {
+                            showAchievement('Question resolved! You\'ve earned 15 experience points!');
+                        }, 1000);
+                    });
+                });
+            };
+            
+            // Initialize Insight Tree
+            const initInsightTree = () => {
+                // Mock data for the knowledge tree
+                const treeNodes = [
+                    { id: 'core-1', type: 'core', title: 'Programming Basics', description: 'Fundamental programming concepts', x: 50, y: 50 },
+                    { id: 'branch-1', type: 'branch', title: 'Data Structures', description: 'Ways to organize and store data', x: 30, y: 30, parent: 'core-1' },
+                    { id: 'branch-2', type: 'branch', title: 'Algorithms', description: 'Problem-solving procedures', x: 70, y: 30, parent: 'core-1' },
+                    { id: 'branch-3', type: 'branch', title: 'Web Development', description: 'Building web applications', x: 30, y: 70, parent: 'core-1' },
+                    { id: 'branch-4', type: 'branch', title: 'Database Systems', description: 'Managing and organizing data', x: 70, y: 70, parent: 'core-1' },
+                    { id: 'leaf-1', type: 'leaf', title: 'Arrays', description: 'Linear data structures', x: 20, y: 20, parent: 'branch-1' },
+                    { id: 'leaf-2', type: 'leaf', title: 'Linked Lists', description: 'Linked sequence of nodes', x: 40, y: 20, parent: 'branch-1' },
+                    { id: 'leaf-3', type: 'leaf', title: 'Sorting', description: 'Algorithms for ordering elements', x: 60, y: 20, parent: 'branch-2' },
+                    { id: 'leaf-4', type: 'leaf', title: 'Searching', description: 'Algorithms for finding elements', x: 80, y: 20, parent: 'branch-2' },
+                    { id: 'leaf-5', type: 'leaf', title: 'HTML/CSS', description: 'Web page structure and styling', x: 20, y: 80, parent: 'branch-3' },
+                    { id: 'leaf-6', type: 'leaf', title: 'JavaScript', description: 'Client-side web programming', x: 40, y: 80, parent: 'branch-3' },
+                    { id: 'leaf-7', type: 'leaf', title: 'SQL', description: 'Structured Query Language', x: 60, y: 80, parent: 'branch-4' },
+                    { id: 'leaf-8', type: 'leaf', title: 'NoSQL', description: 'Non-relational databases', x: 80, y: 80, parent: 'branch-4' }
+                ];
+                
+                // Clear container
+                insightTreeContainer.innerHTML = '';
+                
+                // Draw connections first (so they're behind nodes)
+                treeNodes.forEach(node => {
+                    if (node.parent) {
+                        const parent = treeNodes.find(n => n.id === node.parent);
+                        if (parent) {
+                            // Create connection line
+                            const connection = document.createElement('div');
+                            connection.className = 'tree-connection';
+                            
+                            // Calculate position and dimensions
+                            const x1 = parent.x;
+                            const y1 = parent.y;
+                            const x2 = node.x;
+                            const y2 = node.y;
+                            
+                            // Calculate distance and angle
+                            const dx = x2 - x1;
+                            const dy = y2 - y1;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                            
+                            // Position and rotate the line
+                            connection.style.width = `${distance}%`;
+                            connection.style.height = '2px';
+                            connection.style.left = `${x1}%`;
+                            connection.style.top = `${y1}%`;
+                            connection.style.transform = `rotate(${angle}deg)`;
+                            
+                            insightTreeContainer.appendChild(connection);
+                        }
+                    }
+                });
+                
+                // Add nodes on top of connections
+                treeNodes.forEach(node => {
+                    const nodeElement = document.createElement('div');
+                    nodeElement.className = `tree-node ${node.type}`;
+                    nodeElement.dataset.id = node.id;
+                    nodeElement.dataset.title = node.title;
+                    nodeElement.dataset.description = node.description;
+                    nodeElement.style.left = `${node.x}%`;
+                    nodeElement.style.top = `${node.y}%`;
+                    
+                    // Add node content (text inside node)
+                    if (node.type === 'core') {
+                        nodeElement.textContent = node.title;
+                    } else {
+                        // First letter only for smaller nodes
+                        nodeElement.textContent = node.title.charAt(0);
+                    }
+                    
+                    insightTreeContainer.appendChild(nodeElement);
+                    
+                    // Add tooltip functionality
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tree-tooltip';
+                    tooltip.innerHTML = `
+                        <div class="tree-tooltip-title">${node.title}</div>
+                        <div class="tree-tooltip-desc">${node.description}</div>
+                        <div class="tree-tooltip-meta">12 questions · 45 answers</div>
+                    `;
+                    insightTreeContainer.appendChild(tooltip);
+                    
+                    nodeElement.addEventListener('mouseover', () => {
+                        // Position tooltip
+                        const rect = nodeElement.getBoundingClientRect();
+                        const containerRect = insightTreeContainer.getBoundingClientRect();
+                        
+                        tooltip.style.left = `${rect.left - containerRect.left + rect.width + 10}px`;
+                        tooltip.style.top = `${rect.top - containerRect.top}px`;
+                        tooltip.style.opacity = '1';
+                    });
+                    
+                    nodeElement.addEventListener('mouseout', () => {
+                        tooltip.style.opacity = '0';
+                    });
+                    
+                    nodeElement.addEventListener('click', () => {
+                        // In a real implementation, show questions related to this node
+                        document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
+                        nodeElement.classList.add('active');
+                        showFeedback(`Exploring ${node.title} knowledge area`);
+                    });
+                });
+            };
+            
+            // Tags functionality
+            const setupTagInput = () => {
+                // Add tag when ENTER or comma is pressed
+                tagInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        addTag(tagInput.value.trim());
+                    }
+                });
+                
+                // Handle focus and blur for suggestions
+                tagInput.addEventListener('focus', () => {
+                    showTagSuggestions();
+                });
+                
+                // Init tag suggestions
+                const showTagSuggestions = () => {
+                    // Mock suggestions - in a real implementation, these would be from the server
+                    const suggestions = [
+                        'python', 'javascript', 'java', 'c++', 'algorithms', 'data-structures',
+                        'web-development', 'machine-learning', 'database', 'sql', 'react',
+                        'node.js', 'html', 'css', 'android', 'ios', 'flutter', 'spring',
+                        'django', 'express', 'tensorflow', 'pytorch'
+                    ];
+                    
+                    // Filter based on current input
+                    const inputValue = tagInput.value.trim().toLowerCase();
+                    const filtered = suggestions.filter(tag => 
+                        tag.toLowerCase().includes(inputValue) && 
+                        !currentTags.includes(tag)
+                    ).slice(0, 5); // Show top 5 matches
+                    
+                    // Update suggestion UI
+                    if (filtered.length > 0 && inputValue.length > 0) {
+                        tagSuggestions.innerHTML = filtered.map(tag => 
+                            `<div class="tag-suggestion" data-tag="${tag}">${tag}</div>`
+                        ).join('');
+                        
+                        // Add click events to suggestions
+                        document.querySelectorAll('.tag-suggestion').forEach(suggestion => {
+                            suggestion.addEventListener('click', () => {
+                                addTag(suggestion.dataset.tag);
+                                tagSuggestions.classList.remove('active');
+                            });
+                        });
+                        
+                        // Position and show suggestions
+                        const inputRect = tagInput.getBoundingClientRect();
+                        tagSuggestions.style.left = `${inputRect.left}px`;
+                        tagSuggestions.style.top = `${inputRect.bottom + 5}px`;
+                        tagSuggestions.classList.add('active');
+                    } else {
+                        tagSuggestions.classList.remove('active');
+                    }
+                };
+                
+                // Add a tag to the container
+                const addTag = (tag) => {
+                    tag = tag.trim().replace(/,/g, '');
+                    
+                    if (!tag) return;
+                    
+                    // Check if tag already exists
+                    if (currentTags.includes(tag)) {
+                        showFeedback('This tag is already added', 'warning');
+                        tagInput.value = '';
+                        return;
+                    }
+                    
+                    // Check max tags
+                    if (currentTags.length >= 5) {
+                        showFeedback('Maximum 5 tags allowed', 'warning');
+                        tagInput.value = '';
+                        return;
+                    }
+                    
+                    // Create tag element
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'question-tag';
+                    tagElement.innerHTML = `
+                        <i class="fas fa-tag"></i> ${tag}
+                        <span class="tag-remove"><i class="fas fa-times"></i></span>
+                    `;
+                    
+                    // Insert before the input
+                    tagContainer.insertBefore(tagElement, tagInput);
+                    
+                    // Add to current tags
+                    currentTags.push(tag);
+                    
+                    // Clear input
+                    tagInput.value = '';
+                    
+                    // Add remove event
+                    tagElement.querySelector('.tag-remove').addEventListener('click', () => {
+                        tagElement.remove();
+                        currentTags = currentTags.filter(t => t !== tag);
+                    });
+                };
+                
+                // Update suggestions when typing
+                tagInput.addEventListener('input', showTagSuggestions);
+                
+                // Hide suggestions when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!tagInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
+                        tagSuggestions.classList.remove('active');
+                    }
+                });
+            };
+            
+            // Utility function to strip HTML tags
+            const stripHtml = (html) => {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                return temp.textContent || temp.innerText || '';
+            };
+            
+            // Check if a question is new (less than 24 hours old)
+            const isNewQuestion = (createdAt) => {
+                const created = new Date(createdAt);
+                const now = new Date();
+                const diffTime = Math.abs(now - created);
+                const diffHours = diffTime / (1000 * 60 * 60);
+                return diffHours < 24;
+            };
+            
+            // Mock data functions
+            const getMockQuestions = () => {
+                return [
+                    {
+                        _id: 'q1',
+                        title: 'How to implement a balanced binary search tree?',
+                        content: `<p>I'm trying to implement a balanced binary search tree in Python, but I'm having trouble with the rotation algorithms. Here's my current implementation:</p>
+                        <pre class="code-block">class Node:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+        self.height = 1
+
+class AVLTree:
+    def __init__(self):
+        self.root = None
+        
+    def insert(self, value):
+        # Implementation here
+    
+    def _rotate_right(self, y):
+        # Rotation algorithm
+        pass
+        
+    def _rotate_left(self, x):
+        # Rotation algorithm
+        pass</pre>
+                        <p>Can someone explain how to properly implement the rotation algorithms to maintain balance?</p>`,
+                        category: 'Computer Science',
+                        tags: ['python', 'algorithms', 'data-structures', 'trees', 'balanced-trees'],
+                        complexity: 4,
+                        author: {
+                            _id: 'u1',
+                            username: 'Aditya',
+                            avatar_id: 'avatar1',
+                            level: 5
+                        },
+                        created_at: '2023-05-18T15:30:00Z',
+                        upvotes: 12,
+                        answer_count: 3,
+                        view_count: 145,
+                        is_answered: true,
+                        is_trending: true,
+                        is_featured: false
+                    },
+                    {
+                        _id: 'q2',
+                        title: 'Differences between normalization forms in database design',
+                        content: `<p>I'm studying database design and I'm confused about the differences between the normal forms (1NF, 2NF, 3NF, BCNF, etc.).</p>
+                        <p>Can someone explain each normal form with simple examples? In particular, I'm having trouble understanding the difference between 3NF and BCNF.</p>
+                        <p>Also, in what situations would you choose not to fully normalize a database?</p>`,
+                        category: 'Database Systems',
+                        tags: ['database', 'normalization', 'sql', 'database-design'],
+                        complexity: 3,
+                        author: {
+                            _id: 'u2',
+                            username: 'Priya',
+                            avatar_id: 'avatar2',
+                            level: 4
+                        },
+                        created_at: '2023-05-20T10:15:00Z',
+                        upvotes: 8,
+                        answer_count: 2,
+                        view_count: 98,
+                        is_answered: true,
+                        is_featured: true,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q3',
+                        title: 'How to implement JWT authentication in a React + Node.js application?',
+                        content: `<p>I'm building a web application using React for the frontend and Node.js/Express for the backend. I want to implement JSON Web Token (JWT) authentication.</p>
+                        <p>My questions are:</p>
+                        <ol>
+                            <li>Where should I store the JWT token on the client-side? (localStorage, cookies, etc.)</li>
+                            <li>How to handle token expiration and refresh tokens?</li>
+                            <li>What's the best way to protect routes on the backend?</li>
+                            <li>How to secure the token against XSS and CSRF attacks?</li>
+                        </ol>
+                        <p>Any code examples or best practices would be greatly appreciated!</p>`,
+                        category: 'Web Development',
+                        tags: ['javascript', 'react', 'node.js', 'authentication', 'jwt'],
+                        complexity: 3,
+                        author: {
+                            _id: 'u3',
+                            username: 'Rahul',
+                            avatar_id: 'avatar3',
+                            level: 6
+                        },
+                        created_at: '2023-05-21T14:45:00Z',
+                        upvotes: 15,
+                        answer_count: 4,
+                        view_count: 210,
+                        is_answered: false,
+                        is_featured: false,
+                        is_trending: true
+                    },
+                    {
+                        _id: 'q4',
+                        title: 'Different types of joins in SQL and their use cases',
+                        content: `<p>I understand the basic concept of joins in SQL, but I'm having trouble understanding when to use each type (INNER, LEFT, RIGHT, FULL OUTER).</p>
+                        <p>Could someone explain with simple examples when each type would be appropriate? Also, are there performance considerations when choosing between different types of joins?</p>`,
+                        category: 'Database Systems',
+                        tags: ['sql', 'database', 'joins'],
+                        complexity: 2,
+                        author: {
+                            _id: 'u4',
+                            username: 'Ananya',
+                            avatar_id: 'avatar4',
+                            level: 3
+                        },
+                        created_at: '2023-05-22T09:30:00Z',
+                        upvotes: 7,
+                        answer_count: 2,
+                        view_count: 85,
+                        is_answered: true,
+                        is_featured: false,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q5',
+                        title: 'How to implement a recommendation system using collaborative filtering?',
+                        content: `<p>I'm working on a project that requires a recommendation system, and I'm considering using collaborative filtering. I understand the general concept, but I'm not sure how to implement it effectively.</p>
+                        <p>Specifically, I'm looking for guidance on:</p>
+                        <ul>
+                            <li>User-based vs. item-based collaborative filtering</li>
+                            <li>Handling the cold start problem</li>
+                            <li>Scaling the algorithm for a large number of users/items</li>
+                            <li>Evaluation metrics for the system</li>
+                        </ul>
+                        <p>Any insights or code examples would be helpful!</p>`,
+                        category: 'Artificial Intelligence',
+                        tags: ['machine-learning', 'recommendation-systems', 'collaborative-filtering', 'python'],
+                        complexity: 4,
+                        author: {
+                            _id: 'u5',
+                            username: 'Vikram',
+                            avatar_id: 'avatar5',
+                            level: 7
+                        },
+                        created_at: '2023-05-23T16:20:00Z',
+                        upvotes: 19,
+                        answer_count: 3,
+                        view_count: 178,
+                        is_answered: false,
+                        is_featured: true,
+                        is_trending: true
+                    },
+                    {
+                        _id: 'q6',
+                        title: 'What is the difference between process and thread in operating systems?',
+                        content: `<p>I'm learning about operating systems and I'm confused about the differences between processes and threads. I understand that both are used for concurrent execution, but I'm not clear on the specifics.</p>
+                        <p>Could someone explain:</p>
+                        <ul>
+                            <li>The key differences between processes and threads</li>
+                            <li>Advantages and disadvantages of each</li>
+                            <li>How context switching works for both</li>
+                            <li>When to use multithreading vs multiprocessing</li>
+                        </ul>
+                        <p>Examples in the context of common programming languages would be helpful too.</p>`,
+                        category: 'Computer Science',
+                        tags: ['operating-systems', 'processes', 'threads', 'concurrency'],
+                        complexity: 3,
+                        author: {
+                            _id: 'u6',
+                            username: 'Deepak',
+                            avatar_id: 'avatar6',
+                            level: 4
+                        },
+                        created_at: '2023-05-24T11:10:00Z',
+                        upvotes: 11,
+                        answer_count: 2,
+                        view_count: 132,
+                        is_answered: true,
+                        is_featured: false,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q7',
+                        title: 'How to implement a RESTful API using Express.js?',
+                        content: `<p>I'm new to backend development and I want to create a RESTful API using Express.js. I've set up a basic Express server, but I'm not sure how to structure the API endpoints and handle different HTTP methods.</p>
+                        <p>I would appreciate guidance on:</p>
+                        <ul>
+                            <li>Best practices for organizing routes</li>
+                            <li>Implementing CRUD operations</li>
+                            <li>Error handling</li>
+                            <li>Authentication and authorization</li>
+                            <li>Input validation</li>
+                        </ul>
+                        <p>A simple example project or code snippets would be very helpful!</p>`,
+                        category: 'Web Development',
+                        tags: ['javascript', 'node.js', 'express', 'api', 'rest'],
+                        complexity: 2,
+                        author: {
+                            _id: 'u7',
+                            username: 'Meera',
+                            avatar_id: 'avatar7',
+                            level: 3
+                        },
+                        created_at: '2023-05-25T13:40:00Z',
+                        upvotes: 9,
+                        answer_count: 3,
+                        view_count: 120,
+                        is_answered: false,
+                        is_featured: false,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q8',
+                        title: 'Understanding Big O notation and time complexity analysis',
+                        content: `<p>I'm preparing for coding interviews and trying to get a better understanding of Big O notation and time complexity analysis.</p>
+                        <p>Could someone explain:</p>
+                        <ul>
+                            <li>The difference between O(n), Θ(n), and Ω(n)</li>
+                            <li>How to analyze the time complexity of recursive algorithms</li>
+                            <li>Common pitfalls when analyzing algorithms</li>
+                            <li>Practical tips for optimizing code based on complexity analysis</li>
+                        </ul>
+                        <p>Examples with common algorithms would be very helpful!</p>`,
+                        category: 'Computer Science',
+                        tags: ['algorithms', 'time-complexity', 'big-o-notation', 'interview-preparation'],
+                        complexity: 3,
+                        author: {
+                            _id: 'u8',
+                            username: 'Arjun',
+                            avatar_id: 'avatar8',
+                            level: 5
+                        },
+                        created_at: '2023-05-26T10:05:00Z',
+                        upvotes: 14,
+                        answer_count: 2,
+                        view_count: 165,
+                        is_answered: true,
+                        is_featured: true,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q9',
+                        title: 'Best practices for state management in React applications',
+                        content: `<p>I'm building a React application and I'm trying to figure out the best approach for state management. There seem to be many options (useState, useReducer, Context API, Redux, MobX, Recoil, etc.).</p>
+                        <p>How do I decide which state management solution to use? Are there specific use cases where one is clearly better than the others?</p>
+                        <p>I'm also curious about performance implications and how to structure state for maintainability as the application grows.</p>`,
+                        category: 'Web Development',
+                        tags: ['javascript', 'react', 'state-management', 'redux', 'context-api'],
+                        complexity: 3,
+                        author: {
+                            _id: 'u9',
+                            username: 'Neha',
+                            avatar_id: 'avatar9',
+                            level: 6
+                        },
+                        created_at: '2023-05-27T15:25:00Z',
+                        upvotes: 16,
+                        answer_count: 4,
+                        view_count: 190,
+                        is_answered: false,
+                        is_featured: true,
+                        is_trending: true
+                    },
+                    {
+                        _id: 'q10',
+                        title: 'How does backpropagation work in neural networks?',
+                        content: `<p>I'm studying neural networks and machine learning, and while I understand the forward pass, I'm having trouble understanding backpropagation.</p>
+                        <p>Could someone explain:</p>
+                        <ul>
+                            <li>The mathematics behind backpropagation</li>
+                            <li>How gradients are calculated and propagated</li>
+                            <li>Common issues like vanishing/exploding gradients</li>
+                            <li>How optimizers like SGD, Adam, etc. use these gradients</li>
+                        </ul>
+                        <p>A simple example with calculations would be extremely helpful!</p>`,
+                        category: 'Artificial Intelligence',
+                        tags: ['machine-learning', 'neural-networks', 'backpropagation', 'deep-learning'],
+                        complexity: 5,
+                        author: {
+                            _id: 'u10',
+                            username: 'Karthik',
+                            avatar_id: 'avatar10',
+                            level: 8
+                        },
+                        created_at: '2023-05-28T09:55:00Z',
+                        upvotes: 21,
+                        answer_count: 3,
+                        view_count: 215,
+                        is_answered: true,
+                        is_featured: false,
+                        is_trending: true
+                    },
+                    {
+                        _id: 'q11',
+                        title: 'How to implement proper error handling in Python?',
+                        content: `<p>I'm working on a Python application and I want to implement proper error handling. I know the basics of try/except blocks, but I'd like to understand the best practices.</p>
+                        <p>Specifically, I'm wondering:</p>
+                        <ul>
+                            <li>When to use specific exception types vs. catching general exceptions</li>
+                            <li>How to create custom exception classes</li>
+                            <li>Best practices for error logging</li>
+                            <li>How to handle errors in different contexts (CLI apps, web APIs, etc.)</li>
+                        </ul>
+                        <p>Any examples or guidelines would be appreciated!</p>`,
+                        category: 'Computer Science',
+                        tags: ['python', 'error-handling', 'exceptions', 'best-practices'],
+                        complexity: 2,
+                        author: {
+                            _id: 'u11',
+                            username: 'Shreya',
+                            avatar_id: 'avatar11',
+                            level: 4
+                        },
+                        created_at: '2023-05-29T14:15:00Z',
+                        upvotes: 8,
+                        answer_count: 2,
+                        view_count: 95,
+                        is_answered: false,
+                        is_featured: false,
+                        is_trending: false
+                    },
+                    {
+                        _id: 'q12',
+                        title: 'What are design patterns and when should they be used?',
+                        content: `<p>I keep hearing about design patterns in software engineering, but I'm not sure when and how to use them. I understand they're reusable solutions to common problems, but I'd like more concrete information.</p>
+                        <p>Could someone explain:</p>
+                        <ul>
+                            <li>The most important design patterns and their use cases</li>
+                            <li>When to apply a design pattern vs. using a simpler solution</li>
+                            <li>How to recognize situations where a specific pattern would be helpful</li>
+                            <li>Common pitfalls or antipatterns to avoid</li>
+                        </ul>
+                        <p>Examples in any language would be helpful, but I'm primarily interested in Java or Python implementations.</p>`,
+                        category: 'Computer Science',
+                        tags: ['design-patterns', 'software-engineering', 'object-oriented', 'architecture'],
+                        complexity: 4,
+                        author: {
+                            _id: 'u12',
+                            username: 'Rohan',
+                            avatar_id: 'avatar12',
+                            level: 7
+                        },
+                        created_at: '2023-05-30T11:30:00Z',
+                        upvotes: 17,
+                        answer_count: 3,
+                        view_count: 185,
+                        is_answered: true,
+                        is_featured: true,
+                        is_trending: false
+                    }
+                ];
+            };
+            
+            const getMockAnswers = (questionId) => {
+                // Mock answers for demonstration
+                const answers = {
+                    q1: [
+                        {
+                            _id: 'a1-1',
+                            bounty_id: 'q1',
+                            content: `<p>The key to implementing rotation algorithms in AVL trees is understanding the four cases:</p>
+                            <ol>
+                                <li>Left-Left Case: Right rotation</li>
+                                <li>Right-Right Case: Left rotation</li>
+                                <li>Left-Right Case: Left rotation on the child, then right rotation on the node</li>
+                                <li>Right-Left Case: Right rotation on the child, then left rotation on the node</li>
+                            </ol>
+                            <p>Here's how you can implement the rotations:</p>
+                            <pre class="code-block">def _rotate_right(self, y):
+    x = y.left
+    T2 = x.right
+
+    # Perform rotation
+    x.right = y
+    y.left = T2
+
+    # Update heights
+    y.height = max(self._get_height(y.left), self._get_height(y.right)) + 1
+    x.height = max(self._get_height(x.left), self._get_height(x.right)) + 1
+
+    # Return the new root
+    return x
+
+def _rotate_left(self, x):
+    y = x.right
+    T2 = y.left
+
+    # Perform rotation
+    y.left = x
+    x.right = T2
+
+    # Update heights
+    x.height = max(self._get_height(x.left), self._get_height(x.right)) + 1
+    y.height = max(self._get_height(y.left), self._get_height(y.right)) + 1
+
+    # Return the new root
+    return y</pre>
+                            <p>The balance factor is also important. It's calculated as height(left subtree) - height(right subtree). If it's greater than 1, the tree is left-heavy; if it's less than -1, the tree is right-heavy.</p>
+                            <p>Here's a helper method to get the balance factor:</p>
+                            <pre class="code-block">def _get_balance(self, node):
+    if not node:
+        return 0
+    return self._get_height(node.left) - self._get_height(node.right)</pre>
+                            <p>Hope this helps with your implementation!</p>`,
+                            responder_id: 'u5',
+                            author: {
+                                _id: 'u5',
+                                username: 'Vikram',
+                                avatar_id: 'avatar5',
+                                expertise: 'Algorithm Expert'
+                            },
+                            upvotes: 15,
+                            downvotes: 1,
+                            is_accepted: true,
+                            is_verified: true,
+                            created_at: '2023-05-18T16:45:00Z',
+                            user_vote: null,
+                            comments: [
+                                {
+                                    _id: 'c1-1',
+                                    content: 'This explanation is very clear. Thanks for the detailed code examples!',
+                                    author: {
+                                        _id: 'u1',
+                                        username: 'Aditya'
+                                    },
+                                    created_at: '2023-05-18T17:30:00Z'
+                                },
+                                {
+                                    _id: 'c1-2',
+                                    content: 'Do you need to handle the case where node is None in the _get_height method?',
+                                    author: {
+                                        _id: 'u3',
+                                        username: 'Rahul'
+                                    },
+                                    created_at: '2023-05-18T18:15:00Z'
+                                }
+                            ]
+                        },
+                        {
+                            _id: 'a1-2',
+                            bounty_id: 'q1',
+                            content: `<p>I think it would be helpful to visualize the rotations. Let me explain with diagrams:</p>
+                            <p><strong>Left Rotation:</strong></p>
+                            <pre class="code-block">    x                y
+     \\              /
+      y     -->    x
+     /              \\
+    T2              T2</pre>
+                            <p><strong>Right Rotation:</strong></p>
+                            <pre class="code-block">      y          x
+     /            \\
+    x     -->      y
+     \\            /
+      T2          T2</pre>
+                            <p>The implementation provided by Vikram is correct. I'll add that the insert method should use these rotations after inserting a value like this:</p>
+                            <pre class="code-block">def insert(self, root, value):
+    # Standard BST insert
+    if not root:
+        return Node(value)
+    elif value < root.value:
+        root.left = self.insert(root.left, value)
+    else:
+        root.right = self.insert(root.right, value)
+    
+    # Update height
+    root.height = 1 + max(self._get_height(root.left), self._get_height(root.right))
+    
+    # Get balance factor
+    balance = self._get_balance(root)
+    
+    # Left Left Case
+    if balance > 1 and value < root.left.value:
+        return self._rotate_right(root)
+    
+    # Right Right Case
+    if balance < -1 and value > root.right.value:
+        return self._rotate_left(root)
+    
+    # Left Right Case
+    if balance > 1 and value > root.left.value:
+        root.left = self._rotate_left(root.left)
+        return self._rotate_right(root)
+    
+    # Right Left Case
+    if balance < -1 and value < root.right.value:
+        root.right = self._rotate_right(root.right)
+        return self._rotate_left(root)
+    
+    return root</pre>
+                            <p>Remember to initialize the root in your insert method if it's None, and don't forget to implement the _get_height helper function as Vikram mentioned.</p>`,
+                            responder_id: 'u7',
+                            author: {
+                                _id: 'u7',
+                                username: 'Meera',
+                                avatar_id: 'avatar7'
+                            },
+                            upvotes: 10,
+                            downvotes: 0,
+                            is_accepted: false,
+                            is_verified: false,
+                            created_at: '2023-05-18T17:20:00Z',
+                            user_vote: null,
+                            comments: []
+                        }
+                    ],
+                    q2: [
+                        {
+                            _id: 'a2-1',
+                            bounty_id: 'q2',
+                            content: `<p>Let me explain the normal forms with simple examples:</p>
+                            <p><strong>First Normal Form (1NF):</strong> A relation is in 1NF if it contains atomic values only. No repeating groups or arrays.</p>
+                            <p>Example:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>Courses</th></tr>
+                                <tr><td>1</td><td>Math, Science</td></tr>
+                            </table>
+                            <p>This violates 1NF because Courses contains multiple values. To convert to 1NF:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>Course</th></tr>
+                                <tr><td>1</td><td>Math</td></tr>
+                                <tr><td>1</td><td>Science</td></tr>
+                            </table>
+                            
+                            <p><strong>Second Normal Form (2NF):</strong> A relation is in 2NF if it is in 1NF and all non-key attributes are fully dependent on the primary key (no partial dependencies).</p>
+                            <p>Example:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>CourseID</th><th>CourseName</th><th>StudentName</th></tr>
+                                <tr><td>1</td><td>C1</td><td>Math</td><td>John</td></tr>
+                                <tr><td>1</td><td>C2</td><td>Science</td><td>John</td></tr>
+                            </table>
+                            <p>This violates 2NF because CourseName depends only on CourseID (not on the full primary key {StudentID, CourseID}), and StudentName depends only on StudentID. To convert to 2NF:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>CourseID</th></tr>
+                                <tr><td>1</td><td>C1</td></tr>
+                                <tr><td>1</td><td>C2</td></tr>
+                            </table>
+                            <table>
+                                <tr><th>CourseID</th><th>CourseName</th></tr>
+                                <tr><td>C1</td><td>Math</td></tr>
+                                <tr><td>C2</td><td>Science</td></tr>
+                            </table>
+                            <table>
+                                <tr><th>StudentID</th><th>StudentName</th></tr>
+                                <tr><td>1</td><td>John</td></tr>
+                            </table>
+                            
+                            <p><strong>Third Normal Form (3NF):</strong> A relation is in 3NF if it is in 2NF and has no transitive dependencies (non-key attributes depending on other non-key attributes).</p>
+                            <p>Example:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>DepartmentID</th><th>DepartmentName</th></tr>
+                                <tr><td>1</td><td>D1</td><td>Computer Science</td></tr>
+                                <tr><td>2</td><td>D2</td><td>Mathematics</td></tr>
+                            </table>
+                            <p>This violates 3NF because DepartmentName depends on DepartmentID, not directly on StudentID. To convert to 3NF:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>DepartmentID</th></tr>
+                                <tr><td>1</td><td>D1</td></tr>
+                                <tr><td>2</td><td>D2</td></tr>
+                            </table>
+                            <table>
+                                <tr><th>DepartmentID</th><th>DepartmentName</th></tr>
+                                <tr><td>D1</td><td>Computer Science</td></tr>
+                                <tr><td>D2</td><td>Mathematics</td></tr>
+                            </table>
+                            
+                            <p><strong>Boyce-Codd Normal Form (BCNF):</strong> A relation is in BCNF if for every dependency X → Y, X is a superkey (every determinant is a candidate key).</p>
+                            <p>The difference between 3NF and BCNF comes into play when there are multiple candidate keys that overlap. BCNF is stricter than 3NF.</p>
+                            <p>Example:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>Course</th><th>Professor</th></tr>
+                                <tr><td>1</td><td>Math</td><td>Smith</td></tr>
+                                <tr><td>2</td><td>Science</td><td>Jones</td></tr>
+                                <tr><td>3</td><td>Math</td><td>Smith</td></tr>
+                            </table>
+                            <p>Suppose each course is taught by exactly one professor, and each professor teaches exactly one course. Then {StudentID, Course} and {StudentID, Professor} are both candidate keys. But there's a dependency Course → Professor, where Course is not a superkey. This violates BCNF. To convert to BCNF:</p>
+                            <table>
+                                <tr><th>StudentID</th><th>Course</th></tr>
+                                <tr><td>1</td><td>Math</td></tr>
+                                <tr><td>2</td><td>Science</td></tr>
+                                <tr><td>3</td><td>Math</td></tr>
+                            </table>
+                            <table>
+                                <tr><th>Course</th><th>Professor</th></tr>
+                                <tr><td>Math</td><td>Smith</td></tr>
+                                <tr><td>Science</td><td>Jones</td></tr>
+                            </table>
+                            
+                            <p><strong>When not to fully normalize:</strong></p>
+                            <ol>
+                                <li>Performance optimization: Denormalization can reduce JOINs and improve read performance.</li>
+                                <li>Reporting/analytics systems: Often denormalized for query performance.</li>
+                                <li>Data warehouses: Typically use star or snowflake schemas that aren't fully normalized.</li>
+                                <li>Archival data: May be denormalized to preserve historical context.</li>
+                                <li>When the data relationships are unlikely to change.</li>
+                            </ol>
+                            <p>Remember that normalization is a trade-off between data integrity and performance. Always consider your specific use case when deciding how much to normalize.</p>`,
+                            responder_id: 'u8',
+                            author: {
+                                _id: 'u8',
+                                username: 'Arjun',
+                                avatar_id: 'avatar8',
+                                expertise: 'Database Expert'
+                            },
+                            upvotes: 13,
+                            downvotes: 0,
+                            is_accepted: true,
+                            is_verified: true,
+                            created_at: '2023-05-20T11:30:00Z',
+                            user_vote: null,
+                            comments: []
+                        }
+                    ],
+                    // Add more answers for other questions as needed
+                };
+                
+                return answers[questionId] || [];
+            };
+            
+            // Event listeners
+            // Filter by category
+            document.querySelectorAll('.sidebar-menu-item[data-filter]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all filter items
+                    document.querySelectorAll('.sidebar-menu-item[data-filter]').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Update current filter
+                    currentFilter = item.dataset.filter;
+                    currentPage = 1;
+                    
+                    // Reload questions
+                    loadQuestions();
+                });
+            });
+            
+            // Filter by status
+            document.querySelectorAll('.sidebar-menu-item[data-status]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all status items
+                    document.querySelectorAll('.sidebar-menu-item[data-status]').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Update current status
+                    currentStatus = item.dataset.status;
+                    currentPage = 1;
+                    
+                    // Reload questions
+                    loadQuestions();
+                });
+            });
+            
+            // Filter by complexity
+            document.querySelectorAll('input[name="complexity"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    // Update selected complexities
+                    selectedComplexities = Array.from(document.querySelectorAll('input[name="complexity"]:checked')).map(checkbox => parseInt(checkbox.value));
+                    currentPage = 1;
+                    
+                    // Reload questions
+                    loadQuestions();
+                });
+            });
+            
+            // Filter by search
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim();
+                
+                // Debounce search to avoid too many requests
+                clearTimeout(searchInput.timeout);
+                searchInput.timeout = setTimeout(() => {
+                    currentPage = 1;
+                    loadQuestions();
+                }, 500);
+            });
+            
+            // Sort questions
+            sortSelect.addEventListener('change', () => {
+                currentSort = sortSelect.value;
+                currentPage = 1;
+                loadQuestions();
+            });
+            
+            // Ask Question Modal
+            askQuestionBtn.addEventListener('click', () => {
+                // Reset form
+                questionForm.reset();
+                questionEditor.root.innerHTML = '';
+                currentTags = [];
+                
+                // Clear existing tags
+                const tagElements = document.querySelectorAll('.question-tag');
+                tagElements.forEach(tag => {
+                    if (tag.parentNode === tagContainer) {
+                        tag.remove();
+                    }
+                });
+                
+                // Reset complexity selection
+                document.querySelectorAll('.complexity-option').forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.dataset.complexity === '3') {
+                        option.classList.add('selected');
+                    }
+                });
+                selectedComplexity = 3;
+                
+                // Show modal
+                askQuestionModal.classList.add('show');
+            });
+            
+            closeAskModal.addEventListener('click', () => {
+                askQuestionModal.classList.remove('show');
+            });
+            
+            cancelAskBtn.addEventListener('click', () => {
+                askQuestionModal.classList.remove('show');
+            });
+            
+            // Complexity selection in form
+            complexityOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    complexityOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Update selected complexity
+                    selectedComplexity = parseInt(option.dataset.complexity);
+                });
+            });
+            
+            // Submit question
+            submitQuestionBtn.addEventListener('click', () => {
+                // Get form data
+                const title = document.getElementById('questionTitle').value.trim();
+                const category = document.getElementById('questionCategory').value;
+                const content = questionEditor.root.innerHTML;
+                
+                // Validate form
+                if (!title) {
+                    showFeedback('Please enter a title', 'error');
+                    return;
+                }
+                
+                if (!category) {
+                    showFeedback('Please select a category', 'error');
+                    return;
+                }
+                
+                if (content === '<p><br></p>' || content === '') {
+                    showFeedback('Please enter a description', 'error');
+                    return;
+                }
+                
+                // In a real implementation, send API request to save question
+                // For now, simulate success
+                showFeedback('Your question has been posted!');
+                
+                // Close the modal
+                askQuestionModal.classList.remove('show');
+                
+                // Show achievement notification
+                setTimeout(() => {
+                    showAchievement('You\'ve earned the "First Question" badge!');
+                }, 1000);
+                
+                // Refresh questions list
+                setTimeout(() => {
+                    loadQuestions();
+                }, 1500);
+            });
+            
+            // Question detail modal
+            closeDetailModal.addEventListener('click', () => {
+                questionDetailModal.classList.remove('show');
+            });
+            
+            // Toggle activity feed
+            toggleActivity.addEventListener('click', () => {
+                activityFeed.classList.toggle('active');
+                toggleActivity.innerHTML = activityFeed.classList.contains('active') 
+                    ? '<i class="fas fa-times"></i>' 
+                    : '<i class="fas fa-bell"></i>';
+            });
+            
+            // Insight Tree
+            insightTreeBtn.addEventListener('click', () => {
+                // Initialize the tree visualization
+                initInsightTree();
+                
+                // Show modal
+                insightTreeModal.classList.add('show');
+            });
+            
+            closeInsightModal.addEventListener('click', () => {
+                insightTreeModal.classList.remove('show');
+            });
+            
+            // Initialize the application
+            const init = () => {
+                // Initialize Rich Text Editor
+                initQuillEditor();
+                
+                // Set up tag input functionality
+                setupTagInput();
+                
+                // Load user data
+                loadUserData();
+            };
+            
+            // Start the application
+            init();
+        });
+    </script>
+</body>
+</html> 

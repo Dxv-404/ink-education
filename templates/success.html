@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INK | Success</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: black; overflow: hidden; position: relative; font-family: 'Poppins', sans-serif; }
+
+    .background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(12px) brightness(0.5);
+      z-index: 0;
+    }
+
+    .success-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #F7F7F7;
+      font-family: 'Press Start 2P', cursive;
+      text-align: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .success-gif {
+      width: 250px;
+      height: 250px;
+      object-fit: contain;
+    }
+
+    .continue-btn {
+      margin-top: 2rem;
+      padding: 1rem 2rem;
+      background: black;
+      border: 2px solid white;
+      color: white;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .continue-btn:hover {
+      background: white;
+      color: black;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Blurred background gif -->
+<img src="{{ url_for('static', filename='assets/onboarding.gif') }}" class="background">
+
+<div class="success-container">
+  
+  <img src="{{ url_for('static', filename='assets/success_loading.gif') }}" alt="Success" class="success-gif">
+
+  <h1>Profile Completed!</h1>
+
+  <!-- We're not using a form here anymore -->
+  <button id="continueButton" class="continue-btn">Go to Dashboard</button>
+  
+  <!-- Add debug information (hidden in production) -->
+  <div id="sessionInfo" style="font-size: 0.6rem; margin-top: 20px; color: #555; display: none;">
+    Session ID: <span id="sessionStatus">Checking...</span>
+  </div>
+</div>
+
+<script>
+  // Store user_id in localStorage as backup
+  const userId = "{{ uid }}";
+  if (userId) {
+    localStorage.setItem('ink_user_id', userId);
+    console.log("Saved user_id to localStorage:", userId);
+  }
+  
+  document.getElementById('continueButton').addEventListener('click', function() {
+    // Use the uid from the template, or fall back to localStorage
+    const storedUserId = localStorage.getItem('ink_user_id');
+    const redirectUserId = userId || storedUserId || '';
+    
+    // Redirect to dashboard with user_id parameter
+    window.location.href = "/dashboard?uid=" + redirectUserId;
+  });
+  
+  // Auto-redirect after 3 seconds
+  setTimeout(function() {
+    const storedUserId = localStorage.getItem('ink_user_id');
+    const redirectUserId = userId || storedUserId || '';
+    window.location.href = "/dashboard?uid=" + redirectUserId;
+  }, 3000);
+  
+  // Update session info for debugging
+  document.getElementById('sessionStatus').textContent = 
+    userId ? "Present in template" : "Missing from template";
+</script>
+
+</body>
+</html>

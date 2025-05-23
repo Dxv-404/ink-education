@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INK</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Poppins:wght@400;500;600&family=Press+Start+2P&family=Playfair+Display:wght@700&family=Pacifico&family=Abril+Fatface&family=VT323&family=Special+Elite&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      height: 500vh; /* Controls scroll range */
+      font-family: 'Staatliches', sans-serif;
+      background: black;
+      overflow-x: hidden;
+    }
+
+    /* Main container */
+    .main-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: opacity 0.8s ease;
+    }
+
+    /* Top Section */
+    .top-section {
+      flex: 4;
+      background: #F7F7F7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .top-section.black {
+      background: #000000;
+    }
+
+    /* INK text */
+    .ink-text {
+      font-family: 'Staatliches', cursive;
+      font-size: 14rem;
+      letter-spacing: 16px;
+      color: #242422;
+      text-align: center;
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform-origin: center;
+    }
+
+    .ink-text.white {
+      color: #FFFFFF;
+    }
+
+    /* Bottom Section */
+    .bottom-section {
+      flex: 6;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* GIFs */
+    .gif {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.8s ease;
+    }
+
+    .blossom-gif {
+      opacity: 1;
+    }
+
+    .ascii-gif {
+      opacity: 0;
+    }
+
+    /* Fluted overlay */
+    .fluted-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.05) 0px,
+        rgba(255, 255, 255, 0.05) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      opacity: 0.7;
+      z-index: 3;
+      pointer-events: none;
+    }
+    
+    /* Pixel Heart */
+    .pixel-heart {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 150;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 2px;
+      transition: opacity 0.5s ease;
+      cursor: pointer;
+    }
+    
+    .heart-pixel {
+      background-color: #242422;
+      transition: background-color 0.5s ease;
+    }
+    
+    .pixel-heart.white .heart-pixel {
+      background-color: #FFFFFF;
+    }
+    
+    /* Block transition overlay */
+    .transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 100;
+      pointer-events: none;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(12, 1fr);
+      gap: 2px;
+      visibility: hidden;
+    }
+    
+    /* Block cells */
+    .block-cell {
+      background-color: black;
+      transform: translateY(-101%);
+      transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      will-change: transform;
+    }
+    
+    /* White cells for reverse transition */
+    .block-cell.reverse {
+      background-color: white;
+    }
+
+    /* Invisible scroll helper */
+    .scroll-helper {
+      position: absolute;
+      width: 1px;
+      height: 100vh;
+      top: 400vh; /* Position marker at the end of the scrollable area */
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2rem;
+      z-index: 200;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .scroll-indicator span {
+      display: block;
+      width: 20px;
+      height: 30px;
+      margin: 0 auto;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .scroll-indicator span::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      animation: scrollDown 1.5s infinite;
+    }
+
+    @keyframes scrollDown {
+      0% {
+        opacity: 0;
+        top: 5px;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        top: 20px;
+      }
+    }
+    
+    /* Debug panel */
+    .debug-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none;
+    }
+
+    /* Text Animation Section */
+    .text-animation-section {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: #F7F7F7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    
+    .text-animation-section.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .text-animation-container {
+      position: relative;
+      width: 80%;
+      max-width: 1200px;
+      height: 70vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    
+    .text-content {
+      flex: 1;
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .text-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      font-family: 'Poppins', sans-serif;
+      font-size: 3rem;
+      font-weight: 500;
+      color: #242422;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .text-line.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .text-images {
+      flex: 1;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .text-image {
+      position: absolute;
+      width: 90%;
+      max-height: 80%;
+      object-fit: contain;
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+      transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+    
+    .text-image.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    
+    /* Grid for text animation */
+    .text-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(30, 1fr);
+      grid-template-rows: repeat(20, 1fr);
+      z-index: -1;
+    }
+    
+    .text-grid-dot {
+      position: relative;
+      width: 4px;
+      height: 4px;
+      margin: auto;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.1);
+      transform: scale(0);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .text-grid-dot.highlight {
+      background-color: #242422;
+      z-index: 1;
+    }
+
+    /* Animation for grid dots ripple effect */
+    @keyframes rippleEffect {
+      0% {
+        transform: scale(0);
+      }
+      70% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Loading Animation Section */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: #121212;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.8s ease;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .counter {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 6rem;
+      color: white;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s forwards;
+    }
+
+    .logo-container {
+      position: relative;
+      height: 8rem;
+      overflow: hidden;
+    }
+
+    .logo-text {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 4rem;
+      color: white;
+      letter-spacing: 0.5rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .logo-text.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .loading-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/static/assets/landing_bg.jpg');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.15;
+      filter: brightness(0.7) contrast(1.2);
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* NEW: Features Carousel Section - Redesigned */
+    .features-section {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: #151520;
+      display: flex;
+      flex-direction: column;
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+      overflow: hidden;
+    }
+    
+    .features-section.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .features-header {
+        display: flex;
+        justify-content: center; /* Changed back to center for the main content */
+        align-items: center;
+        padding: 1.5rem 2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .features-logo-text {
+        position: absolute; /* Add this */
+        left: 50%; /* Add this */
+        transform: translateX(-50%); /* Add this */
+        font-family: 'Press Start 2P', cursive;
+        font-size: 2.5rem;
+        color: white;
+        letter-spacing: 0.3rem;
+        text-align: center;
+        transition: opacity 0.5s ease, transform 0.5s ease, font-family 0.5s ease;
+    }
+
+    .features-logo-text.font1 {
+      font-family: 'Press Start 2P', cursive; /* Pixel */
+    }
+
+    .features-logo-text.font2 {
+      font-family: 'Pacifico', cursive; /* Cursive */
+    }
+
+    .features-logo-text.font3 {
+      font-family: 'Playfair Display', serif; /* Elegant */
+    }
+
+    .features-logo-text.font4 {
+      font-family: 'Abril Fatface', cursive; /* Bold Display */
+    }
+
+    .features-logo-text.font5 {
+      font-family: 'VT323', monospace; /* Retro Monospace */
+    }
+    
+    .features-logo-text.font6 {
+      font-family: 'Special Elite', cursive; /* Typewriter */
+    }
+
+    .register-btn {
+  
+        font-family: 'Press Start 2P', cursive;
+        font-size: 0.85rem;
+        background-color: transparent;
+        color: white;
+        border: 2px solid white;
+        padding: 0.6rem 1.2rem;
+        cursor: pointer;
+        position: fixed; /* Changed from absolute to relative */
+        right:50px;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .register-btn:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+      );
+      transition: all 0.4s;
+    }
+
+    .register-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px); /* This is fine to keep */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .register-btn:hover:before {
+      left: 100%;
+    }
+
+    .register-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* New carousel design */
+    .carousel-container {
+      flex: 1;
+      position: relative;
+      perspective: 1000px;
+      overflow: hidden;
+    }
+
+    .carousel-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.2;
+      transition: opacity 1s ease;
+    }
+
+    .carousel-bg.active {
+      opacity: 0.2;
+    }
+
+    .carousel-stage {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .feature-card {
+      position: absolute;
+      width: 90%;
+      max-width: 1200px;
+      height: 70%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      transform: translateX(200%) rotateY(-45deg);
+      opacity: 0;
+      transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      pointer-events: none;
+    }
+
+    .feature-card.active {
+      transform: translateX(0) rotateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .feature-card.prev {
+      transform: translateX(-200%) rotateY(45deg);
+      opacity: 0;
+    }
+
+    .feature-title-section {
+      flex: 1;
+      padding-right: 2rem;
+      text-align: right;
+    }
+
+    .feature-image-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      position: relative;
+      z-index: 5;
+    }
+
+    .feature-image-container img {
+      max-width: 100%;
+      max-height: 90%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.6));
+    }
+
+    .feature-content-section {
+      flex: 1;
+      padding-left: 2rem;
+    }
+
+    .feature-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      color: #E2E1F1;
+      line-height: 1.4;
+    }
+
+    .feature-title::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      right: 0;
+      width: 60px;
+      height: 4px;
+      background-color: #6A5ACD;
+    }
+
+    .feature-description {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #B0B0C0;
+      margin-bottom: 2rem;
+    }
+
+    .feature-bullet {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .bullet-icon {
+      width: 18px;
+      height: 18px;
+      background-color: #6A5ACD;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .bullet-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      color: #D0D0E0;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.8rem;
+      z-index: 10;
+    }
+
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .carousel-dot.active {
+      width: 30px;
+      border-radius: 6px;
+      background-color: #6A5ACD;
+    }
+
+    .carousel-arrows {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 2rem;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .carousel-arrow {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(0, 0, 0, 0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.3s;
+    }
+
+    .carousel-arrow:hover {
+      background-color: rgba(106, 90, 205, 0.7);
+      transform: scale(1.1);
+    }
+
+    .carousel-arrow svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+
+    /* Starry background */
+    .stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background-color: white;
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    .star.medium {
+      width: 3px;
+      height: 3px;
+      opacity: 0.8;
+    }
+
+    .star.large {
+      width: 4px;
+      height: 4px;
+      opacity: 1;
+      box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.6);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-bg"></div>
+    <div class="counter" id="counter">3</div>
+    <div class="logo-container">
+      <div class="logo-text" id="logoText">INK</div>
+    </div>
+  </div>
+
+  <!-- Fix for loading screen -->
+  <script>
+    // Fixed loading animation - make sure it completes and reveals content
+    window.addEventListener('DOMContentLoaded', () => {
+      const loadingScreen = document.getElementById('loadingScreen');
+      const counter = document.getElementById('counter');
+      const logoText = document.getElementById('logoText');
+      
+      // Force the loading animation to complete
+      if (loadingScreen && counter && logoText) {
+        let count = 3;
+        counter.textContent = count;
+        
+        const countdown = setInterval(() => {
+          count--;
+          if (count > 0) {
+            counter.textContent = count;
+            counter.style.animation = 'none';
+            void counter.offsetWidth; // Trigger reflow
+            counter.style.animation = 'fadeInUp 0.5s forwards';
+          } else {
+            clearInterval(countdown);
+            
+            // Hide counter and show logo
+            counter.style.opacity = '0';
+            setTimeout(() => {
+              logoText.classList.add('active');
+              
+              // After showing logo, fade out loading screen
+              setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+              }, 1500);
+            }, 500);
+          }
+        }, 1000);
+      }
+    });
+  </script>
+
+  <!-- Single unified container -->
+  <div class="main-container" id="mainContainer">
+    <!-- Top Section -->
+    <div class="top-section" id="topSection">
+      <h1 class="ink-text" id="inkText">INK</h1>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="bottom-section" id="bottomSection">
+      <img src="/static/assets/Blossom.gif" alt="Blossom" class="gif blossom-gif" id="blossomGif">
+      <img src="/static/assets/ascii.gif" alt="ASCII" class="gif ascii-gif" id="asciiGif">
+      <div class="fluted-overlay"></div>
+    </div>
+  </div>
+  
+  <!-- Text Animation Section with Images -->
+  <div class="text-animation-section" id="textAnimationSection">
+    <div class="text-animation-container">
+      <div class="text-content">
+        <div class="text-grid" id="textGrid"></div>
+        
+        <div class="text-line" data-index="0">Creating digital worlds</div>
+        <div class="text-line" data-index="1">Building imagination</div>
+        <div class="text-line" data-index="2">Transforming ideas</div>
+        <div class="text-line" data-index="3">Inspiring creativity</div>
+        <div class="text-line" data-index="4">Designing experiences</div>
+      </div>
+      
+      <div class="text-images">
+        <img src="/static/assets/digital_worlds.jpg" alt="Your Ink,your identity" class="text-image" data-index="0">
+        <img src="/static/assets/building_imagination.jpg" alt="Building imagination" class="text-image" data-index="1">
+        <img src="/static/assets/transforming_ideas.jpg" alt="Transforming ideas" class="text-image" data-index="2">
+        <img src="/static/assets/inspiring_creativity.jpg" alt="Inspiring creativity" class="text-image" data-index="3">
+        <img src="/static/assets/designing.jpg" alt="Inking your education" class="text-image" data-index="4">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Features Carousel Section - Redesigned -->
+  <div class="features-section" id="featuresSection">
+    <div class="features-header">
+      <div id="featuresLogo" class="features-logo-text font1">INK</div>
+      <a href="/login" class="register-btn">REGISTER</a>
+    </div>
+    
+    <div class="carousel-container" id="carouselContainer">
+      <!-- Stars background -->
+      <div class="stars" id="starsContainer"></div>
+      
+      <!-- Carousel backgrounds -->
+      <div class="carousel-bg" data-index="0"></div>
+      <div class="carousel-bg" data-index="1"></div>
+      <div class="carousel-bg" data-index="2"></div>
+      <div class="carousel-bg" data-index="3"></div>
+      <div class="carousel-bg" data-index="4"></div>
+      
+      <div class="carousel-stage" id="carouselStage">
+        <!-- Feature cards will be added via JavaScript -->
+      </div>
+      
+      <div class="carousel-nav" id="carouselNav">
+        <!-- Dots will be added via JavaScript -->
+      </div>
+      
+      <div class="carousel-arrows">
+        <div class="carousel-arrow prev-arrow" id="prevArrow">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </div>
+        <div class="carousel-arrow next-arrow" id="nextArrow">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pixel Heart -->
+  <div class="pixel-heart" id="pixelHeart">
+    <!-- Pixels will be added via JavaScript -->
+  </div>
+  
+  <!-- Block transition overlay -->
+  <div class="transition-overlay" id="transitionOverlay"></div>
+  
+  <!-- Scroll helper element to ensure full scroll range -->
+  <div class="scroll-helper"></div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator" id="scrollIndicator">
+    Scroll to explore
+    <span></span>
+  </div>
+  
+  <!-- Debug panel -->
+  <div class="debug-panel" id="debugPanel">
+    <div id="debugInfo">Debug Info</div>
+    <button id="resetBtn" style="margin-top: 10px">Reset</button>
+  </div>
+  <script>
+    // DOM elements
+    const mainContainer = document.getElementById('mainContainer');
+    const topSection = document.getElementById('topSection');
+    const bottomSection = document.getElementById('bottomSection');
+    const inkText = document.getElementById('inkText');
+    const blossomGif = document.getElementById('blossomGif');
+    const asciiGif = document.getElementById('asciiGif');
+    const pixelHeart = document.getElementById('pixelHeart');
+    const transitionOverlay = document.getElementById('transitionOverlay');
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    const debugPanel = document.getElementById('debugPanel');
+    const debugInfo = document.getElementById('debugInfo');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Loading and feature elements
+    const loadingScreen = document.getElementById('loadingScreen');
+    const counter = document.getElementById('counter');
+    const logoText = document.getElementById('logoText');
+    const featuresSection = document.getElementById('featuresSection');
+    const featuresLogo = document.getElementById('featuresLogo');
+    const carouselContainer = document.getElementById('carouselContainer');
+    const carouselStage = document.getElementById('carouselStage');
+    const carouselNav = document.getElementById('carouselNav');
+    const prevArrow = document.getElementById('prevArrow');
+    const nextArrow = document.getElementById('nextArrow');
+    const starsContainer = document.getElementById('starsContainer');
+
+    // Animation state tracking
+    let currentState = 'white'; // 'white', 'transitioning-to-black', 'black', 'transitioning-to-white', 'text-animation', 'features'
+    let lastScrollPosition = 0;
+    let scrollDirection = 0; // 1 for down, -1 for up
+    let initialLoad = true;
+    let blockCells = [];
+    let transitionInProgress = false;
+    
+    // Default flex ratio
+    const DEFAULT_TOP_FLEX = 4;
+    const DEFAULT_BOTTOM_FLEX = 6;
+    
+    // Configure transition points (percentage of total scroll)
+    const FIRST_ZOOM_START = 0.05;           // When zoom begins
+    const FIRST_ZOOM_END = 0.25;             // When first zoom completes (INK big, bottom small)
+    const FORWARD_TRANSITION_POINT = 0.35;   // When forward transition should trigger
+    const REVERSE_TRANSITION_POINT = 0.2;    // When reverse transition should trigger
+    const SECOND_ZOOM_START = 0.55;          // When second zoom begins (black INK returning to normal size)
+    const SECOND_ZOOM_END = 0.75;            // When second zoom completes (back to original proportions)
+    const TEXT_ANIMATION_POINT = 0.85;       // When text animation section should appear
+    const FEATURES_POINT = 0.95;             // When features section should appear
+    
+    // Grid configuration
+    const GRID_COLS = 10;
+    const GRID_ROWS = 12;
+    
+    // Pixel Heart configuration
+    const heartPattern = [
+      [0, 1, 0, 1, 0],
+      [1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1],
+      [0, 1, 1, 1, 0],
+      [0, 0, 1, 0, 0]
+    ];
+    
+    // Text Animation Configuration
+    const textAnimationSection = document.getElementById('textAnimationSection');
+    const textGrid = document.getElementById('textGrid');
+    const textLines = document.querySelectorAll('.text-line');
+    const textImages = document.querySelectorAll('.text-image');
+    let currentTextIndex = -1;
+    const TEXT_GRID_COLS = 30;
+    const TEXT_GRID_ROWS = 20;
+    let textGridDots = [];
+    let textAnimationActive = false;
+    
+    // Variables to prevent rapid text changes
+    let isShowingNextText = false;
+    let isShowingPrevText = false;
+    
+    // Font cycling for INK heading
+    const fontClasses = ['font1', 'font2', 'font3', 'font4', 'font5', 'font6'];
+    let currentFontIndex = 0;
+    let fontCycleInterval;
+    
+    // Feature Carousel Configuration
+    const features = [
+      {
+        title: "Knowledge Bounty System",
+        description: "Post questions with coin rewards and receive high-quality answers from experts across the platform.",
+        image: "/static/assets/bg1.png", // Replace with actual image path
+        background: "/static/assets/bg1.jpg", // Replace with actual background path
+        bullets: [
+          "Incentivize quality responses with customizable coin rewards",
+          "Complex questions get the attention they deserve",
+          "Built-in verification system for accurate answers"
+        ]
+      },
+      {
+        title: "Academic Marketplace",
+        description: "Connect with tutors, study guides, and educational resources in a secure peer-to-peer marketplace.",
+        image: "/static/assets/bg2.png", // Replace with actual image path
+        background: "/static/assets/bg2.jpg", // Replace with actual background path
+        bullets: [
+          "Find specialized tutors for any subject",
+          "Purchase study materials rated by the community",
+          "Sell your own expertise and earn INK coins"
+        ]
+      },
+      {
+        title: "Q&A Subreddit",
+        description: "Community-moderated forums organized by academic subject for discussions, help, and collaborative learning.",
+        image: "/static/assets/bg3.png", // Replace with actual image path
+        background: "/static/assets/bg3.jpg", // Replace with actual background path
+        bullets: [
+          "Subject-specific discussion boards",
+          "Upvote system promotes quality content",
+          "Reputation system recognizes consistent contributors"
+        ]
+      },
+      {
+        title: "Peer Tutoring System",
+        description: "Schedule one-on-one or group tutoring sessions with verified tutors in our integrated virtual classroom.",
+        image: "/static/assets/bg5.png", // Replace with actual image path
+        background: "/static/assets/bg4.jpg", // Replace with actual background path
+        bullets: [
+          "Built-in video conferencing and screen sharing",
+          "Interactive whiteboard for math and diagrams",
+          "Rating system ensures quality tutoring experiences"
+        ]
+      },
+      {
+        title: "Coin Economy",
+        description: "Our token-based economy rewards contributions, enables transactions, and creates a self-sustaining academic ecosystem.",
+        image: "/static/assets/bg4.png", // Replace with actual image path
+        background: "/static/assets/bg5.jpg", // Replace with actual background path
+        bullets: [
+          "Earn coins by helping others and contributing content",
+          "Spend coins on premium services and resources",
+          "Transparent blockchain-based token system"
+        ]
+      }
+    ];
+    let currentFeatureIndex = 0;
+    let featureCards = [];
+    let carouselDots = [];
+    let featuresActive = false;
+    
+    // Loading Animation
+    function startLoadingAnimation() {
+      // Only show loading animation on first visit
+      if (localStorage.getItem('hasVisitedBefore')) {
+        loadingScreen.classList.add('hidden');
+        return;
+      }
+      
+      // Set the flag for future visits
+      localStorage.setItem('hasVisitedBefore', 'true');
+      
+      // Start countdown
+      let count = 3;
+      counter.textContent = count;
+      
+      const countdown = setInterval(() => {
+        count--;
+        if (count > 0) {
+          counter.textContent = count;
+          counter.style.animation = 'none';
+          void counter.offsetWidth; // Trigger reflow
+          counter.style.animation = 'fadeInUp 0.5s forwards';
+        } else {
+          clearInterval(countdown);
+          
+          // Hide counter and show logo
+          counter.style.opacity = '0';
+          setTimeout(() => {
+            logoText.classList.add('active');
+            
+            // After showing logo, fade out loading screen
+            setTimeout(() => {
+              loadingScreen.classList.add('hidden');
+            }, 1500);
+          }, 500);
+        }
+      }, 1000);
+    }
+
+    // Font cycling for INK heading
+    // Font cycling for INK heading with smoother transitions
+    function startFontCycling() {
+        if (fontCycleInterval) clearInterval(fontCycleInterval);
+  
+        fontCycleInterval = setInterval(() => {
+            if (!featuresLogo) return;
+    
+    // Instead of removing and adding classes, use direct style manipulation
+        const nextFontIndex = (currentFontIndex + 1) % fontClasses.length;
+    
+    // Begin transition by adding low opacity
+        featuresLogo.style.opacity = '0.5';
+        featuresLogo.style.transform = 'translateY(5px)';
+    
+    // After slight delay, change the font and restore opacity
+        setTimeout(() => {
+      // Get the font family from the class
+        let nextFont;
+        switch(nextFontIndex) {
+            case 0: nextFont = "'Press Start 2P', cursive"; break; // Pixel
+            case 1: nextFont = "'Pacifico', cursive"; break; // Cursive
+            case 2: nextFont = "'Playfair Display', serif"; break; // Elegant
+            case 3: nextFont = "'Abril Fatface', cursive"; break; // Bold Display
+            case 4: nextFont = "'VT323', monospace"; break; // Retro Monospace
+            case 5: nextFont = "'Special Elite', cursive"; break; // Typewriter
+        }
+      
+      // Apply the new font
+        featuresLogo.style.fontFamily = nextFont;
+      
+      // Restore opacity with transition
+        featuresLogo.style.opacity = '1';
+        featuresLogo.style.transform = 'translateY(0)';
+      
+      // Update current font index
+        currentFontIndex = nextFontIndex;
+        }, 250);
+        }, 3000); // Increased to 3 seconds for better readability
+    }
+    
+    function stopFontCycling() {
+      if (fontCycleInterval) {
+        clearInterval(fontCycleInterval);
+        fontCycleInterval = null;
+      }
+    }
+    
+    // Create random stars for the background
+    function createStars() {
+      if (!starsContainer) return;
+      
+      starsContainer.innerHTML = '';
+      const numStars = 100;
+      
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // Randomly assign size classes
+        const sizeRand = Math.random();
+        if (sizeRand > 0.85) {
+          star.classList.add('large');
+        } else if (sizeRand > 0.65) {
+          star.classList.add('medium');
+        }
+        
+        // Random position
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // Add animation if it's a larger star
+        if (sizeRand > 0.8) {
+          star.style.animation = `twinkle ${3 + Math.random() * 4}s infinite`;
+        }
+        
+        starsContainer.appendChild(star);
+      }
+    }
+    // Create pixel heart
+    function createPixelHeart() {
+      pixelHeart.innerHTML = '';
+      
+      for (let row = 0; row < heartPattern.length; row++) {
+        for (let col = 0; col < heartPattern[row].length; col++) {
+          if (heartPattern[row][col] === 1) {
+            const pixel = document.createElement('div');
+            pixel.className = 'heart-pixel';
+            pixel.style.gridRow = row + 1;
+            pixel.style.gridColumn = col + 1;
+            pixelHeart.appendChild(pixel);
+          }
+        }
+      }
+      
+      // Make pixel heart click take user to top of page
+      pixelHeart.addEventListener('click', () => {
+        // If in features or text animation, go back to start of page
+        if (currentState === 'features' || currentState === 'text-animation') {
+          resetState();
+        } else {
+          // Otherwise just scroll to top
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
+    
+    // Toggle heart color
+    function toggleHeartColor(toWhite) {
+      if (toWhite) {
+        pixelHeart.classList.add('white');
+      } else {
+        pixelHeart.classList.remove('white');
+      }
+    }
+    
+    // Debug mode toggle (press 'd' key)
+    let debugMode = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'd') {
+        debugMode = !debugMode;
+        debugPanel.style.display = debugMode ? 'block' : 'none';
+      }
+    });
+    
+    // Reset button
+    resetBtn.addEventListener('click', () => {
+      resetState();
+    });
+    
+    // Reset the state
+    function resetState() {
+      currentState = 'white';
+      transitionInProgress = false;
+      
+      // Reset heart color
+      toggleHeartColor(false);
+      
+      // Reset flex and transforms
+      topSection.style.flex = DEFAULT_TOP_FLEX;
+      bottomSection.style.flex = DEFAULT_BOTTOM_FLEX;
+      inkText.style.transform = "scale(1)";
+      
+      // Reset text animation
+      deactivateTextAnimation();
+      currentTextIndex = -1;
+      
+      // Reset all text lines and images
+      textLines.forEach(line => {
+        line.classList.remove('active');
+      });
+      textImages.forEach(image => {
+        image.classList.remove('active');
+      });
+      
+      // Reset features section
+      deactivateFeatures();
+      currentFeatureIndex = 0;
+      
+      // Reset all feature cards
+      if (featureCards.length > 0) {
+        featureCards.forEach(card => {
+          card.className = 'feature-card';
+        });
+        featureCards[0].classList.add('active');
+        
+        // Reset dots
+        carouselDots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === 0);
+        });
+        
+        // Reset backgrounds
+        document.querySelectorAll('.carousel-bg').forEach((bg, idx) => {
+          bg.style.opacity = idx === 0 ? '0.2' : '0';
+        });
+      }
+      
+      // Scroll to top
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+      
+      updateState();
+    }
+
+    // Create feature cards
+    function createFeatureCards() {
+      carouselStage.innerHTML = '';
+      carouselNav.innerHTML = '';
+      featureCards = [];
+      carouselDots = [];
+      
+      // Add background images
+      document.querySelectorAll('.carousel-bg').forEach((bg, idx) => {
+        if (idx < features.length) {
+          bg.style.backgroundImage = `url(${features[idx].background})`;
+          bg.style.opacity = idx === 0 ? '0.2' : '0';
+        }
+      });
+      
+      features.forEach((feature, index) => {
+        // Create feature card with three sections
+        const card = document.createElement('div');
+        card.className = 'feature-card';
+        if (index === 0) card.classList.add('active');
+        
+        // Left section - Feature Title
+        const titleSection = document.createElement('div');
+        titleSection.className = 'feature-title-section';
+        
+        const title = document.createElement('h2');
+        title.className = 'feature-title';
+        title.textContent = feature.title;
+        
+        titleSection.appendChild(title);
+        
+        // Middle section - Image
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'feature-image-container';
+        
+        const img = document.createElement('img');
+        img.src = feature.image;
+        img.alt = feature.title;
+        
+        imageContainer.appendChild(img);
+        
+        // Right section - Content
+        const contentSection = document.createElement('div');
+        contentSection.className = 'feature-content-section';
+        
+        const description = document.createElement('p');
+        description.className = 'feature-description';
+        description.textContent = feature.description;
+        
+        const bulletsList = document.createElement('div');
+        bulletsList.className = 'feature-bullets';
+        
+        feature.bullets.forEach(bulletText => {
+          const bullet = document.createElement('div');
+          bullet.className = 'feature-bullet';
+          
+          const icon = document.createElement('div');
+          icon.className = 'bullet-icon';
+          
+          const text = document.createElement('div');
+          text.className = 'bullet-text';
+          text.textContent = bulletText;
+          
+          bullet.appendChild(icon);
+          bullet.appendChild(text);
+          bulletsList.appendChild(bullet);
+        });
+        
+        contentSection.appendChild(description);
+        contentSection.appendChild(bulletsList);
+        
+        // Add all sections to card
+        card.appendChild(titleSection);
+        card.appendChild(imageContainer);
+        card.appendChild(contentSection);
+        
+        carouselStage.appendChild(card);
+        featureCards.push(card);
+        
+        // Create dot
+        const dot = document.createElement('div');
+        dot.className = 'carousel-dot';
+        if (index === 0) dot.classList.add('active');
+        dot.dataset.index = index;
+        
+        dot.addEventListener('click', () => {
+          goToSlide(index);
+        });
+        
+        carouselNav.appendChild(dot);
+        carouselDots.push(dot);
+      });
+      
+      // Set up arrow navigation
+      prevArrow.addEventListener('click', showPreviousFeature);
+      nextArrow.addEventListener('click', showNextFeature);
+    }
+    
+    // Feature carousel navigation
+    function showNextFeature() {
+      const nextIndex = (currentFeatureIndex + 1) % features.length;
+      goToSlide(nextIndex);
+    }
+    
+    function showPreviousFeature() {
+      const prevIndex = (currentFeatureIndex - 1 + features.length) % features.length;
+      goToSlide(prevIndex);
+    }
+    
+    function goToSlide(index) {
+      if (index === currentFeatureIndex) return;
+      
+      // Update current card
+      featureCards[currentFeatureIndex].classList.remove('active');
+      featureCards[currentFeatureIndex].classList.add('prev');
+      
+      // Update background
+      document.querySelectorAll('.carousel-bg').forEach((bg, idx) => {
+        bg.style.opacity = idx === index ? '0.2' : '0';
+      });
+      
+      // Show new card
+      featureCards[index].classList.remove('prev');
+      featureCards[index].classList.add('active');
+      
+      // Update dots
+      carouselDots[currentFeatureIndex].classList.remove('active');
+      carouselDots[index].classList.add('active');
+      
+      // Update index
+      currentFeatureIndex = index;
+    }
+    
+    // Activate features section
+    function activateFeatures() {
+      if (featuresActive) return;
+      
+      featuresActive = true;
+      featuresSection.classList.add('active');
+      textAnimationSection.classList.remove('active');
+      mainContainer.style.opacity = '0';
+      mainContainer.style.pointerEvents = 'none';
+      
+      // Start font cycling for INK heading
+      startFontCycling();
+      
+      // Make sure a card is active
+      if (featureCards.length > 0) {
+        featureCards.forEach(card => card.classList.remove('active', 'prev'));
+        featureCards[currentFeatureIndex].classList.add('active');
+        
+        // Update dots
+        carouselDots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === currentFeatureIndex);
+        });
+        
+        // Update background
+        document.querySelectorAll('.carousel-bg').forEach((bg, idx) => {
+          bg.style.opacity = idx === currentFeatureIndex ? '0.2' : '0';
+        });
+      }
+    }
+    
+    // Deactivate features section
+    function deactivateFeatures() {
+      if (!featuresActive) return;
+      
+      featuresActive = false;
+      featuresSection.classList.remove('active');
+      
+      // Stop font cycling
+      stopFontCycling();
+    }
+    
+    // Create block cells for transition
+    function createBlockCells() {
+      // Clear existing blocks
+      transitionOverlay.innerHTML = '';
+      blockCells = [];
+      
+      // Create cells
+      for (let i = 0; i < GRID_ROWS * GRID_COLS; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'block-cell';
+        
+        // Calculate row and column
+        const row = Math.floor(i / GRID_COLS);
+        const col = i % GRID_COLS;
+        
+        // Store metadata for animation
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        
+        // Add to grid
+        transitionOverlay.appendChild(cell);
+        blockCells.push(cell);
+      }
+    }
+    
+    // Create text grid dots
+    function createTextGrid() {
+      textGrid.innerHTML = '';
+      textGridDots = [];
+      
+      for (let row = 0; row < TEXT_GRID_ROWS; row++) {
+        for (let col = 0; col < TEXT_GRID_COLS; col++) {
+          const dot = document.createElement('div');
+          dot.className = 'text-grid-dot';
+          dot.dataset.row = row;
+          dot.dataset.col = col;
+          
+          textGrid.appendChild(dot);
+          textGridDots.push(dot);
+        }
+      }
+    }
+    
+    // Activate text animation section
+    function activateTextAnimation() {
+      if (textAnimationActive) return;
+      
+      textAnimationActive = true;
+      textAnimationSection.classList.add('active');
+      mainContainer.style.opacity = '0';
+      mainContainer.style.pointerEvents = 'none';
+      
+      // Animate grid dots with ripple effect
+      textGridDots.forEach((dot, index) => {
+        const row = parseInt(dot.dataset.row);
+        const col = parseInt(dot.dataset.col);
+        
+        // Calculate distance from center
+        const centerRow = Math.floor(TEXT_GRID_ROWS / 2);
+        const centerCol = Math.floor(TEXT_GRID_COLS / 2);
+        const distance = Math.sqrt(Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2));
+        
+        // Staggered animation based on distance from center
+        const delay = distance * 20;
+        
+        setTimeout(() => {
+          dot.style.animation = 'rippleEffect 0.6s forwards';
+          dot.style.animationDelay = '0s';
+          dot.style.transform = 'scale(1)';
+        }, delay);
+      });
+      
+      // Show first text after grid animation
+      setTimeout(() => {
+        showNextText();
+      }, 1500);
+    }
+    
+    // Deactivate text animation section
+    function deactivateTextAnimation() {
+      if (!textAnimationActive) return;
+      
+      textAnimationActive = false;
+      textAnimationSection.classList.remove('active');
+      mainContainer.style.opacity = '1';
+      mainContainer.style.pointerEvents = 'auto';
+      
+      // Reset grid dots
+      textGridDots.forEach(dot => {
+        dot.style.animation = '';
+        dot.style.transform = 'scale(0)';
+        dot.classList.remove('highlight');
+      });
+    }
+    
+    // Show next text line with image
+    function showNextText() {
+      // If we've reached the end of text lines, transition to features
+      if (currentTextIndex === textLines.length - 1 && scrollDirection > 0) {
+        // Transition to features section
+        activateFeatures();
+        currentState = 'features';
+        return;
+      }
+      
+      // Hide current text and image if any
+      if (currentTextIndex >= 0) {
+        textLines[currentTextIndex].classList.remove('active');
+        textImages[currentTextIndex].classList.remove('active');
+      }
+      
+      currentTextIndex = (currentTextIndex + 1) % textLines.length;
+      
+      // Show new text and image
+      textLines[currentTextIndex].classList.add('active');
+      textImages[currentTextIndex].classList.add('active');
+      
+      // Highlight random dots near the text
+      highlightRandomDots();
+    }
+    
+    // Show previous text line with image
+    function showPreviousText() {
+      // If we're at the first text line and scrolling up, go back to black state
+      if (currentTextIndex === 0 && scrollDirection < 0) {
+        deactivateTextAnimation();
+        currentState = 'black';
+        return;
+      }
+      
+      // Hide current text and image if any
+      if (currentTextIndex >= 0) {
+        textLines[currentTextIndex].classList.remove('active');
+        textImages[currentTextIndex].classList.remove('active');
+      }
+      
+      currentTextIndex = (currentTextIndex - 1 + textLines.length) % textLines.length;
+      
+      // Show new text and image
+      textLines[currentTextIndex].classList.add('active');
+      textImages[currentTextIndex].classList.add('active');
+      
+      // Highlight random dots near the text
+      highlightRandomDots();
+    }
+    
+    // Highlight random dots
+    function highlightRandomDots() {
+      // Clear previous highlights
+      textGridDots.forEach(dot => {
+        dot.classList.remove('highlight');
+      });
+      
+      // Select random dots to highlight
+      const numDotsToHighlight = 20;
+      const centerRow = Math.floor(TEXT_GRID_ROWS / 2);
+      
+      for (let i = 0; i < numDotsToHighlight; i++) {
+        // Favor dots near the center row (where text is)
+        const row = Math.floor(centerRow + (Math.random() * 8 - 4));
+        const col = Math.floor(Math.random() * TEXT_GRID_COLS);
+        
+        // Find dot at this position
+        const index = row * TEXT_GRID_COLS + col;
+        if (index >= 0 && index < textGridDots.length) {
+          textGridDots[index].classList.add('highlight');
+        }
+      }
+    }
+    
+    // Update debug information
+    function updateDebugInfo() {
+      if (!debugMode) return;
+      
+      const scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      
+      debugInfo.innerHTML = `
+        Scroll: ${scrollProgress.toFixed(3)} (${window.scrollY}px)<br>
+        Max Scroll: ${(document.body.scrollHeight - window.innerHeight)}px<br>
+        Direction: ${scrollDirection > 0 ? "Down" : "Up"}<br>
+        State: ${currentState}<br>
+        Transition: ${transitionInProgress ? 'In Progress' : 'None'}<br>
+        Text Index: ${currentTextIndex}<br>
+        Feature Index: ${currentFeatureIndex}<br>
+        FZOOM_END: ${FIRST_ZOOM_END * (document.body.scrollHeight - window.innerHeight)}px<br>
+        FTRANS_POINT: ${FORWARD_TRANSITION_POINT * (document.body.scrollHeight - window.innerHeight)}px<br>
+        SZOOM_START: ${SECOND_ZOOM_START * (document.body.scrollHeight - window.innerHeight)}px<br>
+        TEXT_ANIM_POINT: ${TEXT_ANIMATION_POINT * (document.body.scrollHeight - window.innerHeight)}px<br>
+        FEATURES_POINT: ${FEATURES_POINT * (document.body.scrollHeight - window.innerHeight)}px
+      `;
+    }
+    // Run the forward transition (white to black)
+    function runForwardTransition() {
+      if (transitionInProgress || currentState !== 'white') return;
+      
+      transitionInProgress = true;
+      currentState = 'transitioning-to-black';
+      
+      updateDebugInfo();
+      
+      // Reset cells to initial state
+      blockCells.forEach(cell => {
+        cell.classList.remove('reverse');
+        cell.style.transform = 'translateY(-101%)';
+      });
+      
+      // Show transition overlay
+      transitionOverlay.style.visibility = 'visible';
+      
+      // Animate blocks with staggered timing
+      blockCells.forEach(cell => {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        
+        // Calculate delay (top to bottom, center out)
+        const delay = row * 40 + Math.abs(col - GRID_COLS/2) * 15;
+        
+        setTimeout(() => {
+          cell.style.transform = 'translateY(0)';
+        }, delay);
+      });
+      
+      // During transition, start changing heart color
+      setTimeout(() => {
+        toggleHeartColor(true);
+      }, 800);
+      
+      // After transition, update state
+      setTimeout(() => {
+        // Apply black state
+        topSection.classList.add('black');
+        inkText.classList.add('white');
+        blossomGif.style.opacity = '0';
+        asciiGif.style.opacity = '1';
+        
+        currentState = 'black';
+        transitionInProgress = false;
+        
+        // Hide transition overlay
+        setTimeout(() => {
+          transitionOverlay.style.visibility = 'hidden';
+        }, 300);
+        
+        // Automatically scroll to next section
+        const targetScrollY = Math.floor(SECOND_ZOOM_START * (document.body.scrollHeight - window.innerHeight));
+        window.scrollTo({
+          top: targetScrollY,
+          behavior: 'auto'
+        });
+        
+        updateDebugInfo();
+      }, GRID_ROWS * 40 + 500);
+    }
+    
+    // Run the reverse transition (black to white)
+    function runReverseTransition() {
+      if (transitionInProgress || currentState !== 'black') return;
+      
+      transitionInProgress = true;
+      currentState = 'transitioning-to-white';
+      
+      updateDebugInfo();
+      
+      // Reset cells for reverse transition
+      blockCells.forEach(cell => {
+        cell.classList.add('reverse');
+        cell.style.transform = 'translateY(0)';
+      });
+      
+      // Show transition overlay
+      transitionOverlay.style.visibility = 'visible';
+      
+      // During transition, start changing heart color
+      setTimeout(() => {
+        toggleHeartColor(false);
+      }, 800);
+      
+      // Animate blocks with staggered timing
+      blockCells.forEach(cell => {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        
+        // Calculate delay (bottom to top, center out)
+        const delay = (GRID_ROWS - row - 1) * 40 + Math.abs(col - GRID_COLS/2) * 15;
+        
+        setTimeout(() => {
+          cell.style.transform = 'translateY(-101%)';
+        }, delay);
+      });
+      
+      // After transition, update state
+      setTimeout(() => {
+        // Apply white state
+        topSection.classList.remove('black');
+        inkText.classList.remove('white');
+        blossomGif.style.opacity = '1';
+        asciiGif.style.opacity = '0';
+        
+        currentState = 'white';
+        transitionInProgress = false;
+        
+        // Hide transition overlay
+        setTimeout(() => {
+          transitionOverlay.style.visibility = 'hidden';
+          
+          // Remove reverse class from blocks
+          blockCells.forEach(cell => {
+            cell.classList.remove('reverse');
+          });
+        }, 300);
+        
+        // Automatically scroll to previous section
+        const targetScrollY = Math.floor(FIRST_ZOOM_END * (document.body.scrollHeight - window.innerHeight));
+        window.scrollTo({
+          top: targetScrollY,
+          behavior: 'auto'
+        });
+        
+        updateDebugInfo();
+      }, GRID_ROWS * 40 + 500);
+    }
+    
+    // Update state based on current properties
+    function updateState() {
+      if (currentState === 'white') {
+        topSection.classList.remove('black');
+        inkText.classList.remove('white');
+        blossomGif.style.opacity = '1';
+        asciiGif.style.opacity = '0';
+        toggleHeartColor(false);
+      } else if (currentState === 'black') {
+        topSection.classList.add('black');
+        inkText.classList.add('white');
+        blossomGif.style.opacity = '0';
+        asciiGif.style.opacity = '1';
+        toggleHeartColor(true);
+      }
+      
+      updateDebugInfo();
+    }
+
+    // Update the animation based on scroll position
+    function updateScroll() {
+      // Skip during transitions
+      if (transitionInProgress) return;
+      
+      // Get scroll progress (0 to 1)
+      const scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      
+      // Determine scroll direction
+      const currentScrollPosition = window.scrollY;
+      scrollDirection = currentScrollPosition > lastScrollPosition ? 1 : -1;
+      lastScrollPosition = currentScrollPosition;
+      
+      // Update scroll indicator
+      scrollIndicator.style.opacity = Math.max(0, 1 - scrollProgress * 2);
+      
+      // Update debugging info
+      updateDebugInfo();
+      
+      // Handle features section
+      if (scrollProgress >= FEATURES_POINT && currentState === 'text-animation' && !featuresActive) {
+        // Transition to features
+        activateFeatures();
+        currentState = 'features';
+        return;
+      } else if (scrollProgress < FEATURES_POINT && currentState === 'features') {
+        // Return to text animation state
+        deactivateFeatures();
+        activateTextAnimation();
+        currentState = 'text-animation';
+        return;
+      }
+      
+      // Handle text animation section
+      if (scrollProgress >= TEXT_ANIMATION_POINT && scrollProgress < FEATURES_POINT && 
+          currentState === 'black' && !textAnimationActive) {
+        // Transition to text animation
+        activateTextAnimation();
+        currentState = 'text-animation';
+        return;
+      } else if (scrollProgress < TEXT_ANIMATION_POINT && currentState === 'text-animation') {
+        // Return to black state
+        deactivateTextAnimation();
+        currentState = 'black';
+      }
+      
+      // If in text animation mode, handle scroll differently
+      if (currentState === 'text-animation') {
+        if (scrollDirection > 0 && !isShowingNextText) {
+          // Show next text when scrolling down
+          isShowingNextText = true;
+          showNextText();
+          // Increased timeout to slow down navigation
+          setTimeout(() => { isShowingNextText = false; }, 1500);
+        } else if (scrollDirection < 0 && !isShowingPrevText) {
+          // Show previous text when scrolling up
+          isShowingPrevText = true;
+          showPreviousText();
+          // Increased timeout to slow down navigation
+          setTimeout(() => { isShowingPrevText = false; }, 1500);
+        }
+        
+        // Don't proceed with other animations
+        return;
+      }
+      
+      // If in features mode, handle scroll differently
+      if (currentState === 'features') {
+        if (scrollDirection > 0) {
+          // Show next feature when scrolling down
+          showNextFeature();
+        } else if (scrollDirection < 0) {
+          // Show previous feature when scrolling up
+          showPreviousFeature();
+        }
+        
+        // Don't proceed with other animations
+        return;
+      }
+
+      // STAGE 1: First zoom (white state)
+      if (currentState === 'white' && scrollProgress < FIRST_ZOOM_END) {
+        // Calculate progress within this stage
+        const zoomProgress = Math.max(0, Math.min(1, (scrollProgress - FIRST_ZOOM_START) / (FIRST_ZOOM_END - FIRST_ZOOM_START)));
+        
+        // Resize sections - INK grows, bottom shrinks
+        const topFlex = DEFAULT_TOP_FLEX + (DEFAULT_BOTTOM_FLEX * zoomProgress);
+        const bottomFlex = DEFAULT_BOTTOM_FLEX * (1 - zoomProgress);
+        
+        topSection.style.flex = topFlex;
+        bottomSection.style.flex = bottomFlex;
+        
+        // Scale up INK text
+        const scale = 1 + (zoomProgress * 2);
+        inkText.style.transform = `scale(${scale})`;
+      }
+      // STAGE 2: Trigger forward transition
+      else if (currentState === 'white' && scrollProgress >= FORWARD_TRANSITION_POINT && scrollDirection > 0) {
+        // Set containers to fully zoomed state
+        topSection.style.flex = DEFAULT_TOP_FLEX + DEFAULT_BOTTOM_FLEX;
+        bottomSection.style.flex = 0;
+        inkText.style.transform = `scale(3)`;
+        
+        // Trigger the transition
+        runForwardTransition();
+      }
+      // STAGE 3: Second zoom (black state)
+      else if (currentState === 'black' && scrollProgress >= SECOND_ZOOM_START) {
+        // Calculate zoom progress
+        const zoomProgress = Math.min(1, (scrollProgress - SECOND_ZOOM_START) / (SECOND_ZOOM_END - SECOND_ZOOM_START));
+        
+        // Resize sections - Top shrinks, bottom grows
+        const topFlex = (DEFAULT_TOP_FLEX + DEFAULT_BOTTOM_FLEX) - (DEFAULT_BOTTOM_FLEX * zoomProgress);
+        const bottomFlex = DEFAULT_BOTTOM_FLEX * zoomProgress;
+        
+        topSection.style.flex = topFlex;
+        bottomSection.style.flex = bottomFlex;
+        
+        // Scale down INK text
+        const scale = 3 - (2 * zoomProgress);
+        inkText.style.transform = `scale(${scale})`;
+      }
+      // STAGE 4: Trigger reverse transition
+      else if (currentState === 'black' && scrollProgress <= REVERSE_TRANSITION_POINT && scrollDirection < 0) {
+        // Make sure containers are in correct state for transition
+        topSection.style.flex = DEFAULT_TOP_FLEX + DEFAULT_BOTTOM_FLEX;
+        bottomSection.style.flex = 0;
+        inkText.style.transform = `scale(3)`;
+        
+        // Trigger reverse transition
+        runReverseTransition();
+      }
+    }
+    
+    // Initialize
+    function init() {
+      // Start loading animation
+      startLoadingAnimation();
+      
+      // Create block cells and pixel heart
+      createBlockCells();
+      createPixelHeart();
+      createTextGrid();
+      createFeatureCards();
+      createStars();
+      
+      // Set up initial state
+      resetState();
+      
+      // Preload GIFs
+      const preloadBlossom = new Image();
+      preloadBlossom.src = "/static/assets/Blossom.gif";
+      
+      const preloadAscii = new Image();
+      preloadAscii.src = "/static/assets/ascii.gif";
+      
+      // Start at top of page
+      window.scrollTo(0, 0);
+      lastScrollPosition = 0;
+      
+      // Position text lines
+      const lineHeight = 4; // rem units
+      textLines.forEach((line, index) => {
+        // Position text lines vertically centered, but stacked
+        const top = 50 + (index - textLines.length / 2) * lineHeight;
+        line.style.top = `${top}%`;
+      });
+      
+      // Start with the first font
+      if (featuresLogo) {
+        fontClasses.forEach(fontClass => {
+          featuresLogo.classList.remove(fontClass);
+        });
+        featuresLogo.classList.add(fontClasses[0]);
+      }
+      
+      // Finalize initialization
+      setTimeout(() => {
+        initialLoad = false;
+        updateScroll();
+      }, 500);
+    }
+    
+    // Handle scroll events with RAF for better performance
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      // Recreate elements
+      createBlockCells();
+      createPixelHeart();
+      createTextGrid();
+      createStars();
+      
+      // Update state
+      if (!initialLoad) {
+        updateState();
+      }
+    });
+    
+    // Better scrolling
+    let velocityY = 0;
+    const friction = 0.85; // Higher = faster scrolling
+    let animating = false;
+    
+    function smoothScroll() {
+      if (transitionInProgress) {
+        animating = false;
+        velocityY = 0;
+        return;
+      }
+      
+      if (Math.abs(velocityY) > 0.1) {
+        // If in text animation mode, don't actually scroll the page
+        if (currentState === 'text-animation') {
+          // Instead, trigger text animations based on scroll direction
+          if (velocityY > 0 && !isShowingNextText) {
+            isShowingNextText = true;
+            showNextText();
+            // Increased timeout to slow down navigation
+            setTimeout(() => { isShowingNextText = false; }, 1500);
+          } else if (velocityY < 0 && !isShowingPrevText) {
+            isShowingPrevText = true;
+            showPreviousText();
+            // Increased timeout to slow down navigation
+            setTimeout(() => { isShowingPrevText = false; }, 1500);
+          }
+        } 
+        // Similar handling for features section
+        else if (currentState === 'features') {
+          // Don't scroll, just navigate features
+          if (velocityY > 0) {
+            showNextFeature();
+            velocityY = 0; // Reset velocity after action
+          } else if (velocityY < 0) {
+            showPreviousFeature();
+            velocityY = 0; // Reset velocity after action
+          }
+        }
+        else {
+          // Normal scrolling for other states
+          window.scrollBy(0, velocityY);
+        }
+        
+        velocityY *= friction;
+        requestAnimationFrame(smoothScroll);
+      } else {
+        animating = false;
+      }
+    }
+    
+    window.addEventListener('wheel', (e) => {
+      if (transitionInProgress) return;
+      
+      // Special handling for interactive sections
+      if (currentState === 'text-animation' || currentState === 'features') {
+        e.preventDefault();
+        // Reduced sensitivity for interactive modes
+        velocityY += e.deltaY * 0.1; 
+      } else {
+        // Faster, smoother scrolling for normal mode
+        velocityY += e.deltaY * 0.4; // Higher multiplier = faster scrolling
+      }
+      
+      if (!animating) {
+        animating = true;
+        requestAnimationFrame(smoothScroll);
+      }
+    }, { passive: false });
+    
+    // Mobile touch scrolling
+    let touchStartY = 0;
+    let touchCurrentY = 0;
+    let lastTouchDeltaY = 0;
+    
+    window.addEventListener('touchstart', (e) => {
+      if (transitionInProgress) return;
+      
+      touchStartY = e.touches[0].clientY;
+      touchCurrentY = touchStartY;
+      lastTouchDeltaY = 0;
+    }, { passive: false });
+    
+    window.addEventListener('touchmove', (e) => {
+      if (transitionInProgress) return;
+      
+      touchCurrentY = e.touches[0].clientY;
+      const deltaY = (touchStartY - touchCurrentY) * 2;
+      
+      // For interactive sections, handle swipe gestures
+      if (currentState === 'text-animation') {
+        // Detect significant directional changes for text navigation
+        if (Math.abs(deltaY - lastTouchDeltaY) > 15) {
+          if (deltaY > lastTouchDeltaY && !isShowingNextText) {
+            // Swipe up - next text
+            isShowingNextText = true;
+            showNextText();
+            setTimeout(() => { isShowingNextText = false; }, 1500);
+          } else if (deltaY < lastTouchDeltaY && !isShowingPrevText) {
+            // Swipe down - previous text
+            isShowingPrevText = true;
+            showPreviousText();
+            setTimeout(() => { isShowingPrevText = false; }, 1500);
+          }
+          
+          lastTouchDeltaY = deltaY;
+          e.preventDefault();
+        }
+      } else if (currentState === 'features') {
+        // For features section, simpler swipe detection
+        if (Math.abs(deltaY - lastTouchDeltaY) > 15) {
+          if (deltaY > lastTouchDeltaY) {
+            // Swipe up - next feature
+            showNextFeature();
+          } else if (deltaY < lastTouchDeltaY) {
+            // Swipe down - previous feature
+            showPreviousFeature();
+          }
+          
+          lastTouchDeltaY = deltaY;
+          e.preventDefault();
+        }
+      } else {
+        // Normal scrolling for other sections
+        velocityY += deltaY * 0.1;
+        touchStartY = touchCurrentY;
+      }
+      
+      if (!animating) {
+        animating = true;
+        requestAnimationFrame(smoothScroll);
+      }
+    }, { passive: false });
+    
+    // Keyboard navigation for text section and features
+    document.addEventListener('keydown', (e) => {
+      if (currentState === 'text-animation') {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          showNextText();
+          e.preventDefault();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          showPreviousText();
+          e.preventDefault();
+        }
+      } else if (currentState === 'features') {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          showNextFeature();
+          e.preventDefault();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          showPreviousFeature();
+          e.preventDefault();
+        }
+      }
+    });
+    
+    // Make sure everything is loaded before starting
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,3609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK | Study Spot Finder</title>
+    
+    <!-- Import Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    
+    <style>
+        /* Base Styles - Matching existing styles */
+        :root {
+            --ink-black: #000000;
+            --ink-white: #ffffff;
+            --ink-gray-light: #f0f0f0;
+            --ink-gray-dark: #333333;
+            --ink-purple: #7b3eab;
+            --ink-blue: #3f51b5;
+            --ink-green: #4caf50;
+            --ink-amber: #ffc107;
+            --ink-orange: #ff5722;
+            --ink-red: #f44336;
+            --ink-teal: #009688;
+            --pixel-size: 8px;
+            --menu-width: 250px;
+            --menu-collapsed-width: 60px;
+            --menu-transition: 0.3s ease;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background-color: var(--ink-black);
+            color: var(--ink-white);
+            overflow-x: hidden;
+            min-height: 100vh;
+            image-rendering: pixelated;
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            height: var(--header-height);
+            border-bottom: 2px solid var(--ink-white);
+            position: relative;
+            background-color: var(--ink-black);
+            z-index: 100;
+        }
+
+        .ink-title {
+            font-family: 'Staatliches', cursive;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            margin-left: 80px;
+        }
+
+        .user-info {
+            margin-left: auto;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-btn, .dashboard-btn {
+            padding: 0.5rem 1rem;
+            background: var(--ink-white);
+            color: var(--ink-black);
+            text-decoration: none;
+            font-size: 0.7rem;
+            border-radius: 0;
+            cursor: pointer;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        /* Pixel Heart */
+        .pixel-heart {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 2px;
+            z-index: 10;
+        }
+
+        .heart-pixel {
+            width: 100%;
+            height: 100%;
+            background: var(--ink-white);
+            animation: pixel-pulse 2s infinite;
+        }
+
+        @keyframes pixel-pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Main Container Styles */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--menu-width);
+            background-color: var(--ink-black);
+            border-right: 2px solid var(--ink-white);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--ink-gray-dark);
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: var(--ink-white);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu-item.active {
+            background-color: var(--ink-purple);
+        }
+
+        .sidebar-menu-item i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .coin-balance {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            margin-bottom: 1rem;
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .coin-icon {
+            margin-right: 0.5rem;
+            color: var(--ink-amber);
+        }
+
+        /* Checkbox Styles for Amenities */
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 1.5rem;
+            background-color: var(--ink-black);
+            min-height: calc(100vh - var(--header-height));
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Map Area */
+        .map-container {
+            height: 300px;
+            margin-bottom: 1.5rem;
+            background-color: var(--ink-gray-dark);
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        #mapid {
+            height: 100%;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.65rem;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            border: none;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+        
+        .filter-select:focus, .search-input:focus {
+            outline: none;
+        }
+
+        .search-input {
+            width: 250px;
+        }
+
+        /* Add Spot Button */
+        .add-btn {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .add-btn:hover {
+            background-color: #6a32a0;
+        }
+
+        /* Study Spot Cards */
+        .spot-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            min-height: 200px;
+            transition: opacity 0.3s ease;
+        }
+
+        .spot-card {
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            border-radius: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, opacity 0.3s;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .spot-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .spot-header {
+            padding: 1rem;
+            background-color: var(--ink-gray-light);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .spot-title {
+            font-size: 0.8rem;
+            color: var(--ink-black);
+            /* Ensure the title wraps instead of overflowing */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .spot-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.6rem;
+        }
+
+        .spot-location {
+            display: inline-block;
+            padding: 0.2rem 0.4rem;
+            background-color: var(--ink-teal);
+            color: var(--ink-white);
+            font-size: 0.55rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 3px) 0, 
+                100% 3px, 
+                100% 100%, 
+                3px 100%, 
+                0 calc(100% - 3px)
+            );
+        }
+
+        .spot-occupancy {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .occupancy-low {
+            color: var(--ink-green);
+        }
+
+        .occupancy-medium {
+            color: var(--ink-amber);
+        }
+
+        .occupancy-high {
+            color: var(--ink-red);
+        }
+
+        .spot-body {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .spot-description {
+            font-size: 0.65rem;
+            color: var(--ink-gray-dark);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .spot-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .spot-amenity {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            padding: 0.15rem 0.3rem;
+            background-color: var(--ink-gray-dark);
+            color: var(--ink-white);
+            font-size: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 2px) 0, 
+                100% 2px, 
+                100% 100%, 
+                2px 100%, 
+                0 calc(100% - 2px)
+            );
+        }
+
+        .spot-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--ink-gray-light);
+            font-size: 0.6rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .spot-stats {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .spot-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .verified-badge {
+            padding: 0.2rem 0.4rem;
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+            font-size: 0.55rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - 2px) 0, 
+                100% 2px, 
+                100% 100%, 
+                2px 100%, 
+                0 calc(100% - 2px)
+            );
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s linear 0.3s, opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+            transition-delay: 0s;
+        }
+
+        .modal-container {
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            position: relative;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--ink-black);
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--ink-black);
+        }
+
+        /* Form Styles */
+        .form-row {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--ink-gray-dark);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--ink-purple);
+        }
+
+        .form-help {
+            margin-top: 0.3rem;
+            font-size: 0.55rem;
+            color: var(--ink-gray-dark);
+        }
+
+        /* Spot Details */
+        .spot-detail-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .spot-detail-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .spot-detail-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .spot-creator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.65rem;
+        }
+
+        .spot-detail-location {
+            font-size: 0.7rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spot-detail-description {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .spot-detail-amenities {
+            margin-bottom: 1.5rem;
+        }
+
+        .amenities-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .amenity-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            width: 80px;
+        }
+
+        .amenity-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--ink-teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-white);
+            font-size: 1rem;
+        }
+
+        .amenity-name {
+            font-size: 0.55rem;
+            text-align: center;
+        }
+
+        /* Gallery */
+        .spot-gallery {
+            margin-bottom: 1.5rem;
+        }
+
+        .gallery-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .gallery-item {
+            height: 100px;
+            background-color: var(--ink-gray-light);
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        /* Actions Section */
+        .spot-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .checkin-btn {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .report-btn {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        .directions-btn {
+            background-color: var(--ink-blue);
+            color: var(--ink-white);
+        }
+
+        /* Occupancy Section */
+        .occupancy-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .occupancy-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .occupancy-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .occupancy-option {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.65rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .option-low {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .option-medium {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        .option-high {
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+        }
+
+        /* Review Section */
+        .review-section {
+            margin-top: 2rem;
+            border-top: 2px solid var(--ink-gray-dark);
+            padding-top: 1rem;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .review-title {
+            font-size: 0.8rem;
+        }
+
+        .review-count {
+            font-size: 0.65rem;
+        }
+
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .review-item {
+            background-color: var(--ink-gray-light);
+            padding: 1rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .review-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .review-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.65rem;
+        }
+
+        .review-date {
+            font-size: 0.6rem;
+            color: var(--ink-gray-dark);
+        }
+
+        .review-content {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .review-rating {
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.6rem;
+            color: var(--ink-amber);
+        }
+
+        /* Modal Footer */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .cancel-btn, .submit-btn {
+            padding: 0.7rem 1.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .cancel-btn {
+            background-color: var(--ink-gray-light);
+            color: var(--ink-black);
+        }
+
+        .submit-btn {
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+        }
+
+        .submit-btn:hover {
+            background-color: #6a32a0;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid var(--ink-white);
+                padding: 1rem;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .add-btn {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .spot-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-container {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ink-title {
+                font-size: 2rem;
+                margin-left: 60px;
+            }
+            
+            .user-info {
+                font-size: 0.6rem;
+            }
+            
+            .modal-container {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            .sidebar-menu-item {
+                font-size: 0.6rem;
+            }
+            
+            .coin-balance {
+                font-size: 0.6rem;
+            }
+            
+            .gallery-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .spot-actions {
+                flex-direction: column;
+            }
+            
+            .amenities-list {
+                justify-content: center;
+            }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .page-btn:hover:not(.active):not(.disabled) {
+            transform: translateY(-2px);
+            background-color: var(--ink-gray-light);
+        }
+
+        .page-btn.active {
+            background-color: var(--ink-purple);
+            color: var(--ink-white);
+            pointer-events: none;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading Animation */
+        .loading {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .loading-dots span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--ink-white);
+            margin: 0 3px;
+            border-radius: 0;
+            animation: loading 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes loading {
+            0%, 80%, 100% { 
+                transform: scale(0);
+            } 
+            40% { 
+                transform: scale(1.0);
+            }
+        }
+
+        /* Feedback notification */
+        .feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: translateX(150%);
+            transition: transform 0.3s;
+        }
+
+        .feedback.show {
+            transform: translateX(0);
+        }
+
+        .feedback.success {
+            background-color: var(--ink-green);
+            color: var(--ink-white);
+        }
+
+        .feedback.error {
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+        }
+
+        .feedback.warning {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        /* Replace with this code after the existing .feedback.warning styling */
+        .feedback.warning {
+            background-color: var(--ink-amber);
+            color: var(--ink-black);
+        }
+
+        /* Context Menu Styles */
+        .context-menu {
+            position: absolute;
+            background-color: var(--ink-white);
+            color: var(--ink-black);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            z-index: 1000;
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+            transform: scale(0);
+            transform-origin: top left;
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .context-menu.show {
+            transform: scale(1);
+        }
+
+        .context-menu-item {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--ink-gray-light);
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--ink-gray-light);
+        }
+
+        .context-menu-item i {
+            width: 1rem;
+            text-align: center;
+        }
+
+        /* Highlight for selected spot */
+        .spot-card.highlight {
+            box-shadow: 0 0 0 2px var(--ink-purple);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 2px var(--ink-purple); }
+            50% { box-shadow: 0 0 0 5px var(--ink-purple); }
+            100% { box-shadow: 0 0 0 2px var(--ink-purple); }
+        }
+
+        /* Map marker animation */
+        .pulsing-marker {
+            animation: marker-pulse 1.5s infinite;
+        }
+
+        @keyframes marker-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+            /* Add to your CSS section in the <style> tag */
+        .sidebar-menu-item#clearFiltersBtn {
+            background-color: var(--ink-red);
+            color: var(--ink-white);
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu-item#clearFiltersBtn:hover {
+            background-color: #d32f2f; /* Darker red on hover */
+        }
+
+        /* Style for active filter to make it clearer */
+        .sidebar-menu-item.active {
+            background-color: var(--ink-purple);
+            position: relative;
+        }
+
+        .sidebar-menu-item.active::before {
+            content: '>';
+            position: absolute;
+            left: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="pixel-heart" id="pixelHeart"></div>
+        <h1 class="ink-title">INK</h1>
+        <div class="user-info">
+            <span id="username">{{ user.username }}</span>
+            <a href="/dashboard" class="dashboard-btn">Dashboard</a>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="coin-balance" id="coinBalance">
+                <i class="fas fa-coins coin-icon"></i>
+                <span>Balance: <span id="coinAmount">0</span> coins</span>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Campuses</h3>
+                <div class="sidebar-menu-item active" data-campus="all">
+                    <i class="fas fa-globe"></i> All Campuses
+                </div>
+                <div class="sidebar-menu-item" id="clearFiltersBtn">
+                    <i class="fas fa-times-circle"></i> Clear Filters
+                </div>
+                <div class="sidebar-menu-item" data-campus="main">
+                    <i class="fas fa-university"></i> Main Campus
+                </div>
+                <div class="sidebar-menu-item" data-campus="kengeri">
+                    <i class="fas fa-building"></i> Kengeri Campus
+                </div>
+                <div class="sidebar-menu-item" data-campus="bgr">
+                    <i class="fas fa-landmark"></i> BGR Campus
+                </div>
+                <div class="sidebar-menu-item" data-campus="lavasa">
+                    <i class="fas fa-city"></i> Lavasa Campus
+                </div>
+                <div class="sidebar-menu-item" data-campus="delhi">
+                    <i class="fas fa-hotel"></i> Delhi NCR Campus
+                </div>
+                <div class="sidebar-menu-item" data-campus="yeshwanthpur">
+                    <i class="fas fa-school"></i> Yeshwanthpur Campus
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Distance</h3>
+                <div class="sidebar-menu-item" data-distance="500m">
+                    <i class="fas fa-walking"></i> Within 500m
+                </div>
+                <div class="sidebar-menu-item" data-distance="1km">
+                    <i class="fas fa-hiking"></i> Within 1km
+                </div>
+                <div class="sidebar-menu-item" data-distance="3km">
+                    <i class="fas fa-bicycle"></i> Within 3km
+                </div>
+                <div class="sidebar-menu-item" data-distance="5km">
+                    <i class="fas fa-bus"></i> Within 5km
+                </div>
+                <div class="sidebar-menu-item" data-distance="any">
+                    <i class="fas fa-car"></i> Any Distance
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Occupancy</h3>
+                <div class="sidebar-menu-item" data-occupancy="low">
+                    <i class="fas fa-user"></i> Low (Not Busy)
+                </div>
+                <div class="sidebar-menu-item" data-occupancy="medium">
+                    <i class="fas fa-users"></i> Medium
+                </div>
+                <div class="sidebar-menu-item" data-occupancy="high">
+                    <i class="fas fa-users-cog"></i> High (Busy)
+                </div>
+                <div class="sidebar-menu-item" data-occupancy="any">
+                    <i class="fas fa-user-check"></i> Any Occupancy
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Amenities</h3>
+                <div class="checkbox-container">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="wifi"> Wi-Fi
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="outlets"> Power Outlets
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="quiet"> Quiet Environment
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="group"> Group Friendly
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="food"> Food Allowed
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="computers"> Computers
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="printing"> Printing
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="whiteboard"> Whiteboards
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="amenities" value="natural_light"> Natural Light
+                    </label>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">My Activity</h3>
+                <div class="sidebar-menu-item" data-activity="favorites">
+                    <i class="fas fa-heart"></i> My Favorites
+                </div>
+                <div class="sidebar-menu-item" data-activity="checked-in">
+                    <i class="fas fa-map-marker-alt"></i> Places I've Checked In
+                </div>
+                <div class="sidebar-menu-item" data-activity="added">
+                    <i class="fas fa-plus-circle"></i> Spots I've Added
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="mapid"></div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Sort By:</span>
+                    <select class="filter-select" id="sortSelect">
+                        <option value="distance">Nearest First</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="occupancy">Least Busy</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search study spots...">
+                </div>
+                
+                <button class="add-btn" id="addSpotBtn">
+                    <i class="fas fa-plus"></i> Add Study Spot
+                </button>
+            </div>
+            
+            <!-- Study Spot Container -->
+            <div class="spot-container" id="spotContainer">
+                <!-- Spots will be loaded dynamically -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer">
+                <!-- Pagination will be generated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Study Spot Modal -->
+    <div class="modal-overlay" id="addSpotModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Study Spot</h2>
+                <button class="modal-close" id="closeAddModal">&times;</button>
+            </div>
+            
+            <form id="addSpotForm">
+                <div class="form-row">
+                    <label class="form-label" for="spotName">Name</label>
+                    <input type="text" id="spotName" class="form-input" placeholder="Enter a clear, descriptive name" required>
+                    <div class="form-help">Be specific about the location (e.g., "Library 3rd Floor - Quiet Zone")</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label" for="spotAddress">Address</label>
+                    <input type="text" id="spotAddress" class="form-input" placeholder="Enter the address" required>
+                    <div class="form-help">This helps others find the spot easily</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label" for="spotDescription">Description</label>
+                    <textarea id="spotDescription" class="form-textarea" rows="4" placeholder="Describe this study spot in detail" required></textarea>
+                    <div class="form-help">Provide details about the environment, best times to visit, etc.</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Campus</label>
+                    <select id="spotCampus" class="form-select" required>
+                        <option value="">Select Campus</option>
+                        <option value="main">Main Campus</option>
+                        <option value="kengeri">Kengeri Campus</option>
+                        <option value="bgr">BGR Campus</option>
+                        <option value="lavasa">Lavasa Campus</option>
+                        <option value="delhi">Delhi NCR Campus</option>
+                        <option value="yeshwanthpur">Yeshwanthpur Campus</option>
+                        <option value="off-campus">Off-Campus</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Amenities Available</label>
+                    <div class="checkbox-container">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="wifi"> Wi-Fi
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="outlets"> Power Outlets
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="quiet"> Quiet Environment
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="group"> Group Friendly
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="food"> Food Allowed
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="computers"> Computers
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="printing"> Printing
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="whiteboard"> Whiteboards
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="add_amenities" value="natural_light"> Natural Light
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Upload Photos (Optional)</label>
+                    <input type="file" id="spotPhotos" class="form-input" accept="image/*" multiple>
+                    <div class="form-help">You can upload up to 3 photos of this study spot</div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Pin Location on Map</label>
+                    <div id="pinLocationMap" style="height: 200px; margin-top: 0.5rem; background-color: var(--ink-gray-dark);"></div>
+                    <div class="form-help">Click on the map to set the exact location</div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" id="cancelAddBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Add Study Spot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Study Spot Detail Modal -->
+    <div class="modal-overlay" id="spotDetailModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Study Spot Details</h2>
+                <button class="modal-close" id="closeDetailModal">&times;</button>
+            </div>
+            
+            <div id="spotDetailContent">
+                <!-- Content will be dynamically loaded -->
+                <div class="loading">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Check-in Modal -->
+    <div class="modal-overlay" id="checkinModal">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Check In</h2>
+                <button class="modal-close" id="closeCheckinModal">&times;</button>
+            </div>
+            
+            <form id="checkinForm">
+                <div class="form-row">
+                    <p>You're checking in at <span id="checkinSpotName">Study Spot</span>.</p>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">How long do you plan to stay?</label>
+                    <select id="stayDuration" class="form-select">
+                        <option value="1">About 1 hour</option>
+                        <option value="2">About 2 hours</option>
+                        <option value="3">About 3 hours</option>
+                        <option value="4">About 4 hours</option>
+                        <option value="5">More than 5 hours</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">Current Occupancy Level</label>
+                    <div class="occupancy-options">
+                        <div class="occupancy-option option-low" data-occupancy="low">
+                            <i class="fas fa-user"></i> Low
+                        </div>
+                        <div class="occupancy-option option-medium" data-occupancy="medium">
+                            <i class="fas fa-users"></i> Medium
+                        </div>
+                        <div class="occupancy-option option-high" data-occupancy="high">
+                            <i class="fas fa-users-cog"></i> High
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" id="cancelCheckinBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Check In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Feedback notification -->
+    <div class="feedback" id="feedbackNotification">
+        <i class="fas fa-check-circle"></i>
+        <span id="feedbackMessage">Success message here</span>
+    </div>
+    
+    <!-- Scripts -->
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let currentUser = null;
+            let studySpots = [];
+            let currentSpot = null;
+            let map = null;
+            let markers = [];
+            let userMarker = null;
+            let userPosition = null;
+            let selectedOccupancy = null;
+            
+            // DOM Elements
+            const pixelHeart = document.getElementById('pixelHeart');
+            const usernameElement = document.getElementById('username');
+            const coinBalanceElement = document.getElementById('coinAmount');
+            const spotContainer = document.getElementById('spotContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+            const addSpotBtn = document.getElementById('addSpotBtn');
+            const addSpotModal = document.getElementById('addSpotModal');
+            const closeAddModal = document.getElementById('closeAddModal');
+            const cancelAddBtn = document.getElementById('cancelAddBtn');
+            const addSpotForm = document.getElementById('addSpotForm');
+            const spotDetailModal = document.getElementById('spotDetailModal');
+            const closeDetailModal = document.getElementById('closeDetailModal');
+            const spotDetailContent = document.getElementById('spotDetailContent');
+            const checkinModal = document.getElementById('checkinModal');
+            const closeCheckinModal = document.getElementById('closeCheckinModal');
+            const cancelCheckinBtn = document.getElementById('cancelCheckinBtn');
+            const checkinForm = document.getElementById('checkinForm');
+            const checkinSpotName = document.getElementById('checkinSpotName');
+            const feedbackNotification = document.getElementById('feedbackNotification');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            
+            // Filter/sort state
+            let currentCampus = 'all';
+            let currentDistance = 'any';
+            let currentOccupancy = 'any';
+            let selectedAmenities = [];
+            let currentActivity = null;
+            let currentSort = 'distance';
+            let currentSearch = '';
+            let currentPage = 1;
+            let itemsPerPage = 9;
+            
+            // Create Pixel Heart
+            const createPixelHeart = () => {
+                const heartPattern = [
+                    [0, 1, 0, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 1, 0, 0]
+                ];
+                
+                heartPattern.forEach((row, rowIndex) => {
+                    row.forEach((col, colIndex) => {
+                        if (col) {
+                            const div = document.createElement('div');
+                            div.className = 'heart-pixel';
+                            div.style.gridRow = rowIndex + 1;
+                            div.style.gridColumn = colIndex + 1;
+                            div.style.setProperty('--index', rowIndex + colIndex);
+                            pixelHeart.appendChild(div);
+                        }
+                    });
+                });
+            };
+            
+            // Initialize pixel heart
+            createPixelHeart();
+            
+            // Initialize map
+            const initMap = () => {
+                // Default to Christ University Main Campus location in Bangalore
+                const defaultLat = 12.9344; 
+                const defaultLng = 77.6069;
+                
+                // Create map centered on Christ University
+                map = L.map('mapid').setView([defaultLat, defaultLng], 14);
+                
+                // Add tile layer (map style)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Try to get user's current location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            userPosition = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            
+                            // Center map on user's location if within Bangalore area
+                            const bangaloreRadius = 25; // km
+                            const distToChristUniv = getDistanceFromLatLonInKm(
+                                userPosition.lat, userPosition.lng, 
+                                defaultLat, defaultLng
+                            );
+                            
+                            if (distToChristUniv < bangaloreRadius) {
+                                map.setView([userPosition.lat, userPosition.lng], 14);
+                                
+                                // Add user marker
+                                const userIcon = L.divIcon({
+                                    html: '<i class="fas fa-user-circle" style="color: #3f51b5; font-size: 24px;"></i>',
+                                    className: 'user-marker',
+                                    iconSize: [24, 24],
+                                    iconAnchor: [12, 12]
+                                });
+                                
+                                userMarker = L.marker([userPosition.lat, userPosition.lng], {
+                                    icon: userIcon,
+                                    zIndexOffset: 1000
+                                }).addTo(map);
+                                userMarker.bindTooltip('Your Location');
+                            }
+                            
+                            // Load study spots after getting user location
+                            loadStudySpots();
+                        },
+                        (error) => {
+                            console.log('Geolocation error:', error);
+                            // Load study spots even if geolocation fails
+                            loadStudySpots();
+                        }
+                    );
+                } else {
+                    console.log('Geolocation not supported by this browser');
+                    // Load study spots without user location
+                    loadStudySpots();
+                }
+                
+                // Add event listener for spot selection on the map
+                map.on('click', function(e) {
+                    // For the add spot form, update the location pin
+                    if (addSpotModal.classList.contains('show')) {
+                        // Update hidden input fields for latitude and longitude
+                        document.getElementById('spotLatitude').value = e.latlng.lat;
+                        document.getElementById('spotLongitude').value = e.latlng.lng;
+                        
+                        // Update or add marker
+                        if (window.locationMarker) {
+                            window.locationMarker.setLatLng(e.latlng);
+                        } else {
+                            window.locationMarker = L.marker(e.latlng).addTo(map);
+                        }
+                    }
+                });
+            };
+            
+            // Add these context menu handlers right after the initMap function
+            const initContextMenu = () => {
+                const contextMenu = document.getElementById('spotContextMenu');
+                const showOnMapMenuItem = document.getElementById('showOnMapMenuItem');
+                const checkInMenuItem = document.getElementById('checkInMenuItem');
+                const viewDetailsMenuItem = document.getElementById('viewDetailsMenuItem');
+                
+                // Hide context menu when clicking elsewhere
+                document.addEventListener('click', (e) => {
+                    if (!contextMenu.contains(e.target)) {
+                        contextMenu.classList.remove('show');
+                        // Remove highlight from previously active card
+                        document.querySelectorAll('.spot-card.active-context').forEach(card => {
+                            card.classList.remove('active-context');
+                        });
+                    }
+                });
+                
+                // Handle "Show on Map" action
+                showOnMapMenuItem.addEventListener('click', () => {
+                    const spot = window.activeSpot;
+                    
+                    if (spot) {
+                        showSpotOnMap(spot);
+                    }
+                    
+                    // Hide context menu
+                    contextMenu.classList.remove('show');
+                    
+                    // Remove highlight from previously active card
+                    document.querySelectorAll('.spot-card.active-context').forEach(card => {
+                        card.classList.remove('active-context');
+                    });
+                });
+                
+                // Handle "Check In" action
+                checkInMenuItem.addEventListener('click', () => {
+                    if (window.activeSpotId) {
+                        const spot = studySpots.find(s => s._id === window.activeSpotId);
+                        if (spot) {
+                            openCheckinModal(spot);
+                        }
+                    }
+                    
+                    // Hide context menu
+                    contextMenu.classList.remove('show');
+                    
+                    // Remove highlight from previously active card
+                    document.querySelectorAll('.spot-card.active-context').forEach(card => {
+                        card.classList.remove('active-context');
+                    });
+                });
+                
+                // Handle "View Details" action
+                viewDetailsMenuItem.addEventListener('click', () => {
+                    if (window.activeSpotId) {
+                        openSpotDetail(window.activeSpotId);
+                    }
+                    
+                    // Hide context menu
+                    contextMenu.classList.remove('show');
+                    
+                    // Remove highlight from previously active card
+                    document.querySelectorAll('.spot-card.active-context').forEach(card => {
+                        card.classList.remove('active-context');
+                    });
+                });
+            };
+
+            // Function to show a spot on the map
+            const showSpotOnMap = (spot) => {
+                if (!spot) return;
+                
+                // Highlight the card
+                if (window.activeSpotCard) {
+                    window.activeSpotCard.classList.add('highlight');
+                    
+                    // Remove highlight after 3 seconds
+                    setTimeout(() => {
+                        window.activeSpotCard.classList.remove('highlight');
+                    }, 3000);
+                }
+                
+                // Show loading indicator in feedback
+                showFeedback("Finding location on map...", "warning");
+                
+                // Scroll map into view if needed
+                const mapContainer = document.querySelector('.map-container');
+                if (mapContainer) {
+                    mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                
+                // Try to locate the spot based on campus and address
+                let targetLat, targetLng;
+                let zoomLevel = 16; // Default zoom level for specific locations
+                
+                // Define campus coordinates
+                const CAMPUS_COORDINATES = {
+                    "main": [12.9344, 77.6069],      // Christ University Main Campus
+                    "kengeri": [12.9102, 77.4826],   // Kengeri Campus
+                    "bgr": [12.8687, 77.5957],       // BGR Campus
+                    "yeshwanthpur": [13.0243, 77.5538],  // Yeshwanthpur Campus
+                    "lavasa": [73.5043, 18.4088],    // Lavasa Campus
+                    "delhi": [28.5355, 77.2410],     // Delhi NCR Campus
+                    "school_of_law": [12.9218, 77.4963]  // School of Law
+                };
+                
+                // First check if coordinates are available in the spot data
+                if (spot.coordinates && spot.coordinates.length === 2) {
+                    targetLng = spot.coordinates[0];
+                    targetLat = spot.coordinates[1];
+                } 
+                // Otherwise, use campus-based approximation
+                else {
+                    // Get university/campus from the spot data
+                    let campus = spot.campus || '';
+                    
+                    // Normalize campus name
+                    campus = campus.toLowerCase();
+                    
+                    // If campus is in our coordinate list, use it
+                    if (CAMPUS_COORDINATES[campus]) {
+                        [targetLat, targetLng] = CAMPUS_COORDINATES[campus];
+                        
+                        // If address contains "Near", add a small random offset
+                        if (spot.address && spot.address.includes("Near")) {
+                            // Random offset within 300 meters
+                            const latOffset = (Math.random() - 0.5) * 0.003;
+                            const lngOffset = (Math.random() - 0.5) * 0.003;
+                            
+                            targetLat += latOffset;
+                            targetLng += lngOffset;
+                        }
+                        
+                        // If address specifies a specific building/wing, add a smaller offset
+                        if (spot.address && (spot.address.includes("Wing") || spot.address.includes("Block") || spot.address.includes("Floor"))) {
+                            // Smaller random offset within 100 meters
+                            const latOffset = (Math.random() - 0.5) * 0.001;
+                            const lngOffset = (Math.random() - 0.5) * 0.001;
+                            
+                            targetLat += latOffset;
+                            targetLng += lngOffset;
+                        }
+                    } else {
+                        // No matching campus found, use a default or show error
+                        showFeedback("Couldn't locate this spot precisely. Showing approximate location.", "warning");
+                        
+                        // Use Main Campus as default if no match
+                        [targetLat, targetLng] = CAMPUS_COORDINATES["main"];
+                        zoomLevel = 14; // Zoom out to show wider area
+                    }
+                }
+                
+                // Center map on the location
+                if (targetLat && targetLng) {
+                    // Remove any existing highlighted marker
+                    if (window.highlightedMarker) {
+                        map.removeLayer(window.highlightedMarker);
+                    }
+                    
+                    // Create custom icon for highlighted marker
+                    const highlightIcon = L.divIcon({
+                        html: `<i class="fas fa-map-marker-alt pulsing-marker" style="color: #7b3eab; font-size: 32px;"></i>`,
+                        className: 'highlighted-marker',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    });
+                    
+                    // Add new highlighted marker
+                    window.highlightedMarker = L.marker([targetLat, targetLng], {
+                        icon: highlightIcon,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                    
+                    // Add popup with spot info
+                    window.highlightedMarker.bindPopup(`
+                        <strong>${spot.name}</strong><br>
+                        ${spot.address || 'No address available'}<br>
+                        <em>Click for details</em>
+                    `).openPopup();
+                    
+                    // Center map on location
+                    map.setView([targetLat, targetLng], zoomLevel, {
+                        animate: true,
+                        duration: 1
+                    });
+                    
+                    // Show success message
+                    showFeedback("Location found!", "success");
+                } else {
+                    showFeedback("Couldn't locate this spot on the map.", "error");
+                }
+            };
+            // Calculate distance between two points
+            const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+                const R = 6371; // Radius of the earth in km
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1); 
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2); 
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                const d = R * c; // Distance in km
+                return d;
+            };
+            
+            const deg2rad = (deg) => {
+                return deg * (Math.PI/180);
+            };
+            
+            // Show feedback notification
+            const showFeedback = (message, type = 'success') => {
+                feedbackMessage.textContent = message;
+                feedbackNotification.className = `feedback ${type}`;
+                
+                // Add show class to trigger animation
+                setTimeout(() => {
+                    feedbackNotification.classList.add('show');
+                }, 10);
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    feedbackNotification.classList.remove('show');
+                }, 3000);
+            };
+            
+            // Format date for display
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) {
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    if (diffHours === 0) {
+                        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+                    }
+                    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                } else if (diffDays < 7) {
+                    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+                } else {
+                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                }
+            };
+            
+            // Load user data
+            const loadUserData = () => {
+                fetch('/get-user-data')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            currentUser = data.user;
+                            
+                            // Update UI with user data
+                            usernameElement.textContent = currentUser.username;
+                            coinBalanceElement.textContent = currentUser.coins_balance;
+                            
+                            // Initialize map after user data is loaded
+                            initMap();
+                        } else {
+                            console.error('Failed to load user data:', data.message);
+                            showFeedback('Failed to load user data. Please refresh the page.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading user data:', error);
+                        showFeedback('Error loading user data. Please refresh the page.', 'error');
+                    });
+            };
+            
+            // Load study spots
+            const loadStudySpots = () => {
+                spotContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Clear existing markers
+                if (markers.length > 0) {
+                    markers.forEach(marker => map.removeLayer(marker));
+                    markers = [];
+                }
+                
+                // Prepare query parameters
+                const params = new URLSearchParams();
+                params.append('campus', currentCampus);
+                params.append('distance', currentDistance);
+                params.append('occupancy', currentOccupancy);
+                params.append('sort', currentSort);
+                params.append('page', currentPage);
+                params.append('limit', itemsPerPage);
+
+                if (currentActivity) params.append('activity', currentActivity);
+                if (currentSearch) params.append('search', currentSearch);
+                if (selectedAmenities.length > 0) {
+                    selectedAmenities.forEach(amenity => {
+                        params.append('amenities[]', amenity);
+                    });
+                }
+
+                // Add user position if available for distance-based filtering
+                if (userPosition) {
+                    params.append('user_lat', userPosition.lat);
+                    params.append('user_lng', userPosition.lng);
+                    
+                    // For client-side fallback filtering of distance
+                    window.userPosition = userPosition;
+                }
+
+                // If distance filter is active but no user position, try to get position
+                if (currentDistance !== 'any' && !userPosition) {
+                    // Show a message that we're trying to get location
+                    showFeedback("Getting your location for distance filtering...", "warning");
+                    
+                    // Try to get user's location
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                userPosition = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude
+                                };
+                                
+                                // Store for later use
+                                window.userPosition = userPosition;
+                                
+                                // Add to parameters
+                                params.set('user_lat', userPosition.lat);
+                                params.set('user_lng', userPosition.lng);
+                                
+                                // Reload with new parameters
+                                fetch(`/api/studyspots?${params.toString()}`)
+                                    .then(response => response.json())
+                                    .then(handleStudySpotsResponse)
+                                    .catch(handleStudySpotsError);
+                                
+                                // Show success message
+                                showFeedback("Location found! Filtering spots by distance.", "success");
+                            },
+                            (error) => {
+                                console.error('Geolocation error:', error);
+                                showFeedback("Couldn't get your location. Showing all spots instead.", "error");
+                                
+                                // Fallback to 'any' distance
+                                currentDistance = 'any';
+                                params.set('distance', 'any');
+                                
+                                // Update UI to reflect this
+                                document.querySelectorAll('.sidebar-menu-item[data-distance]').forEach(item => {
+                                    item.classList.remove('active');
+                                    if (item.dataset.distance === 'any') {
+                                        item.classList.add('active');
+                                    }
+                                });
+                                
+                                // Reload with new parameters
+                                fetch(`/api/studyspots?${params.toString()}`)
+                                    .then(response => response.json())
+                                    .then(handleStudySpotsResponse)
+                                    .catch(handleStudySpotsError);
+                            }
+                        );
+                    } else {
+                        showFeedback("Geolocation is not supported by your browser. Showing all spots.", "error");
+                        
+                        // Fallback to 'any' distance
+                        currentDistance = 'any';
+                        params.set('distance', 'any');
+                    }
+                }
+                
+                fetch(`/api/studyspots?${params.toString()}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(handleStudySpotsResponse)
+                    .catch(handleStudySpotsError);
+            };
+            
+            // Helper functions for the fetch response
+            const handleStudySpotsResponse = (data) => {
+                if (data.success) {
+                    studySpots = data.spots;
+                    
+                    // Display appropriate message if no spots found
+                    if (studySpots.length === 0) {
+                        spotContainer.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-search"></i>
+                                <p>No study spots found matching your criteria.</p>
+                                <p>Try adjusting your filters or add a new study spot!</p>
+                            </div>
+                        `;
+                        paginationContainer.innerHTML = '';
+                        return;
+                    }
+                    
+                    // Apply client-side distance filtering if needed and user position is available
+                    if (currentDistance !== 'any' && window.userPosition) {
+                        studySpots = filterByDistance(studySpots, window.userPosition, currentDistance);
+                    }
+                    
+                    displayStudySpots(studySpots);
+                    addSpotsToMap(studySpots);
+                    setupPagination(data.total, data.page, data.pages);
+                } else {
+                    console.error('Failed to load study spots:', data.message);
+                    spotContainer.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Failed to load study spots. Please try again later.</p>
+                        </div>
+                    `;
+                }
+            };
+
+            const handleStudySpotsError = (error) => {
+                console.error('Error loading study spots:', error);
+                spotContainer.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading study spots. Please try again later.</p>
+                    </div>
+                `;
+                
+                // For development: Load sample data if API fails
+                loadSampleData();
+            };
+
+            // Add this client-side distance filtering function
+            const filterByDistance = (spots, userPosition, distanceFilter) => {
+                // Convert string distance to meters
+                let maxDistance;
+                switch (distanceFilter) {
+                    case '500m': maxDistance = 500; break;
+                    case '1km': maxDistance = 1000; break;
+                    case '3km': maxDistance = 3000; break;
+                    case '5km': maxDistance = 5000; break;
+                    default: return spots; // No filtering
+                }
+                
+                // Define campus coordinates
+                const CAMPUS_COORDINATES = {
+                    "main": [12.9344, 77.6069],      // Christ University Main Campus
+                    "kengeri": [12.9102, 77.4826],   // Kengeri Campus
+                    "bgr": [12.8687, 77.5957],       // BGR Campus
+                    "yeshwanthpur": [13.0243, 77.5538],  // Yeshwanthpur Campus
+                    "lavasa": [73.5043, 18.4088],    // Lavasa Campus
+                    "delhi": [28.5355, 77.2410],     // Delhi NCR Campus
+                    "school_of_law": [12.9218, 77.4963]  // School of Law
+                };
+                
+                return spots.filter(spot => {
+                    let spotLat, spotLng;
+                    
+                    // If spot has coordinates, use them
+                    if (spot.coordinates && spot.coordinates.length === 2) {
+                        spotLng = spot.coordinates[0];
+                        spotLat = spot.coordinates[1];
+                    } 
+                    // Otherwise, approximate based on campus
+                    else {
+                        // Get campus from spot
+                        const campus = (spot.campus || '').toLowerCase();
+                        
+                        // If campus is known, use its coordinates
+                        if (CAMPUS_COORDINATES[campus]) {
+                            [spotLat, spotLng] = CAMPUS_COORDINATES[campus];
+                            
+                            // Add small offset for "Near" locations
+                            if (spot.address && spot.address.includes("Near")) {
+                                const latOffset = (Math.random() - 0.5) * 0.003;
+                                const lngOffset = (Math.random() - 0.5) * 0.003;
+                                
+                                spotLat += latOffset;
+                                spotLng += lngOffset;
+                            }
+                        } else {
+                            // If campus is unknown, exclude from results for distance filtering
+                            return false;
+                        }
+                    }
+                    
+                    // Calculate distance
+                    const distance = getDistanceFromLatLonInKm(
+                        userPosition.lat, userPosition.lng,
+                        spotLat, spotLng
+                    ) * 1000; // Convert to meters
+                    
+                    // Include spot if within distance range
+                    return distance <= maxDistance;
+                });
+            };
+            // Load sample data for development
+            const loadSampleData = () => {
+                // Sample study spots data
+                const sampleSpots = [
+                    {
+                        _id: "spot1",
+                        name: "Christ University Main Library - 2nd Floor",
+                        address: "Christ University Main Campus, Hosur Road, Bangalore",
+                        description: "Quiet study area with large tables and excellent natural lighting. Perfect for individual study sessions. Several power outlets available along the walls.",
+                        coordinates: [77.6069, 12.9344], // [lng, lat]
+                        campus: "main",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: true,
+                            group_friendly: false,
+                            food_allowed: false,
+                            computers: false,
+                            printing: false,
+                            whiteboard: false,
+                            natural_light: true
+                        },
+                        occupancy_level: "low",
+                        verified: true,
+                        created_at: "2023-06-15T09:30:00Z",
+                        created_by: "user1",
+                        creator: {
+                            username: "rahul_sharma",
+                            avatar_id: "avatar3"
+                        },
+                        check_ins: 42,
+                        rating: 4.8,
+                        photos: ["/static/studyspots/spot_1001.jpg"]
+                    },
+                    {
+                        _id: "spot2",
+                        name: "Knowledge Centre - Group Study Area",
+                        address: "Christ University Main Campus, Hosur Road, Bangalore",
+                        description: "Large collaborative space with whiteboards and projector facilities. Great for group projects and team meetings. Moderate noise levels during peak hours.",
+                        coordinates: [77.6079, 12.9354], // [lng, lat]
+                        campus: "main",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: false,
+                            group_friendly: true,
+                            food_allowed: false,
+                            computers: true,
+                            printing: true,
+                            whiteboard: true,
+                            natural_light: true
+                        },
+                        occupancy_level: "medium",
+                        verified: true,
+                        created_at: "2023-05-20T14:15:00Z",
+                        created_by: "user2",
+                        creator: {
+                            username: "ananya_patel",
+                            avatar_id: "avatar7"
+                        },
+                        check_ins: 78,
+                        rating: 4.5,
+                        photos: ["/static/studyspots/spot_1002.jpg", "/static/studyspots/spot_1003.jpg"]
+                    },
+                    {
+                        _id: "spot3",
+                        name: "Café Coffee Day - Bannerghatta Road",
+                        address: "Next to Christ BGR Campus, Bannerghatta Road, Bangalore",
+                        description: "Coffee shop with reliable WiFi and comfortable seating. Good ambient music and coffee. Gets busy during evenings and weekends.",
+                        coordinates: [77.5957, 12.8687], // [lng, lat]
+                        campus: "bgr",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: false,
+                            group_friendly: true,
+                            food_allowed: true,
+                            computers: false,
+                            printing: false,
+                            whiteboard: false,
+                            natural_light: true
+                        },
+                        occupancy_level: "high",
+                        verified: true,
+                        created_at: "2023-07-10T10:45:00Z",
+                        created_by: "user3",
+                        creator: {
+                            username: "priya_kumar",
+                            avatar_id: "avatar11"
+                        },
+                        check_ins: 56,
+                        rating: 4.2,
+                        photos: ["/static/studyspots/spot_1004.jpg"]
+                    },
+                    {
+                        _id: "spot4",
+                        name: "Central Block Study Room - Kengeri Campus",
+                        address: "Christ University Kengeri Campus, Bangalore",
+                        description: "Dedicated study room with air conditioning and individual carrels. Silent zone with strict noise policy. Many power outlets and excellent WiFi coverage.",
+                        coordinates: [77.4826, 12.9102], // [lng, lat]
+                        campus: "kengeri",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: true,
+                            group_friendly: false,
+                            food_allowed: false,
+                            computers: false,
+                            printing: false,
+                            whiteboard: false,
+                            natural_light: false
+                        },
+                        occupancy_level: "low",
+                        verified: true,
+                        created_at: "2023-04-05T16:20:00Z",
+                        created_by: "user4",
+                        creator: {
+                            username: "arjun_reddy",
+                            avatar_id: "avatar5"
+                        },
+                        check_ins: 35,
+                        rating: 4.9,
+                        photos: ["/static/studyspots/spot_1005.jpg"]
+                    },
+                    {
+                        _id: "spot5",
+                        name: "Law School Library - BGR Campus",
+                        address: "Christ University School of Law, BGR Campus, Bangalore",
+                        description: "Specialized law library with extensive legal resources and reference materials. Quiet environment with dedicated staff assistance. Limited seating available.",
+                        coordinates: [77.5977, 12.8677], // [lng, lat]
+                        campus: "bgr",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: true,
+                            group_friendly: false,
+                            food_allowed: false,
+                            computers: true,
+                            printing: true,
+                            whiteboard: false,
+                            natural_light: true
+                        },
+                        occupancy_level: "medium",
+                        verified: true,
+                        created_at: "2023-03-12T11:10:00Z",
+                        created_by: "user5",
+                        creator: {
+                            username: "saanvi_iyer",
+                            avatar_id: "avatar2"
+                        },
+                        check_ins: 28,
+                        rating: 4.7,
+                        photos: ["/static/studyspots/spot_1006.jpg"]
+                    },
+                    {
+                        _id: "spot6",
+                        name: "Third Wave Coffee - Lavasa",
+                        address: "Near Christ University Lavasa Campus, Maharashtra",
+                        description: "Modern coffee shop with panoramic views and great ambiance. Free WiFi and plenty of seating options. Great coffee and snacks available.",
+                        coordinates: [73.5043, 18.4088], // [lng, lat]
+                        campus: "lavasa",
+                        amenities: {
+                            wifi: true,
+                            outlets: true,
+                            quiet: false,
+                            group_friendly: true,
+                            food_allowed: true,
+                            computers: false,
+                            printing: false,
+                            whiteboard: false,
+                            natural_light: true
+                        },
+                        occupancy_level: "medium",
+                        verified: false,
+                        created_at: "2023-08-03T13:45:00Z",
+                        created_by: "user6",
+                        creator: {
+                            username: "deepak_mehta",
+                            avatar_id: "avatar8"
+                        },
+                        check_ins: 17,
+                        rating: 4.4,
+                        photos: ["/static/studyspots/spot_1007.jpg", "/static/studyspots/spot_1008.jpg"]
+                    }
+                ];
+                
+                // Display sample data
+                studySpots = sampleSpots;
+                displayStudySpots(sampleSpots);
+                addSpotsToMap(sampleSpots);
+                
+                // Simulated pagination
+                setupPagination(sampleSpots.length, 1, 1);
+            };
+            
+            // Display study spots in the container
+            const displayStudySpots = (spots) => {
+                let html = '';
+                
+                spots.forEach(spot => {
+                    // Get occupancy icon and class
+                    let occupancyIcon = 'fa-user';
+                    let occupancyClass = 'occupancy-low';
+                    let occupancyText = 'Low';
+                    
+                    if (spot.occupancy_level === 'medium') {
+                        occupancyIcon = 'fa-users';
+                        occupancyClass = 'occupancy-medium';
+                        occupancyText = 'Medium';
+                    } else if (spot.occupancy_level === 'high') {
+                        occupancyIcon = 'fa-users-cog';
+                        occupancyClass = 'occupancy-high';
+                        occupancyText = 'High';
+                    }
+                    
+                    // Get amenities that are true
+                    const amenitiesMap = {
+                        wifi: 'Wi-Fi',
+                        outlets: 'Outlets',
+                        quiet: 'Quiet',
+                        group_friendly: 'Group Study',
+                        food_allowed: 'Food Allowed',
+                        computers: 'Computers',
+                        printing: 'Printing',
+                        whiteboard: 'Whiteboard',
+                        natural_light: 'Natural Light'
+                    };
+                    
+                    // Convert amenities object to an array of available amenities
+                    const availableAmenities = [];
+                    for (const [key, value] of Object.entries(spot.amenities)) {
+                        if (value === true) {
+                            availableAmenities.push(key);
+                        }
+                    }
+                    
+                    // Show only first 4 amenities in the card
+                    const visibleAmenities = availableAmenities.slice(0, 4);
+                    const hasMoreAmenities = availableAmenities.length > 4;
+                    
+                    // Build amenities HTML
+                    let amenitiesHtml = '';
+                    visibleAmenities.forEach(amenity => {
+                        // Get corresponding icon
+                        let amenityIcon = 'fa-check';
+                        if (amenity === 'wifi') amenityIcon = 'fa-wifi';
+                        if (amenity === 'outlets') amenityIcon = 'fa-plug';
+                        if (amenity === 'quiet') amenityIcon = 'fa-volume-mute';
+                        if (amenity === 'group_friendly') amenityIcon = 'fa-users';
+                        if (amenity === 'food_allowed') amenityIcon = 'fa-utensils';
+                        if (amenity === 'computers') amenityIcon = 'fa-desktop';
+                        if (amenity === 'printing') amenityIcon = 'fa-print';
+                        if (amenity === 'whiteboard') amenityIcon = 'fa-chalkboard';
+                        if (amenity === 'natural_light') amenityIcon = 'fa-sun';
+                        
+                        amenitiesHtml += `
+                            <span class="spot-amenity">
+                                <i class="fas ${amenityIcon}"></i> ${amenitiesMap[amenity]}
+                            </span>
+                        `;
+                    });
+                    
+                    if (hasMoreAmenities) {
+                        amenitiesHtml += `
+                            <span class="spot-amenity">
+                                <i class="fas fa-plus"></i> ${availableAmenities.length - 4} more
+                            </span>
+                        `;
+                    }
+                    
+                    // Build campus label
+                    let campusName = 'Unknown Campus';
+                    if (spot.campus === 'main') campusName = 'Main Campus';
+                    if (spot.campus === 'kengeri') campusName = 'Kengeri Campus';
+                    if (spot.campus === 'bgr') campusName = 'BGR Campus';
+                    if (spot.campus === 'lavasa') campusName = 'Lavasa Campus';
+                    if (spot.campus === 'delhi') campusName = 'Delhi NCR Campus';
+                    if (spot.campus === 'yeshwanthpur') campusName = 'Yeshwanthpur Campus';
+                    if (spot.campus === 'off-campus') campusName = 'Off Campus';
+                    
+                    html += `
+                        <div class="spot-card" data-id="${spot._id}">
+                            <div class="spot-header">
+                                <h3 class="spot-title">${spot.name}</h3>
+                                <div class="spot-meta">
+                                    <span class="spot-location">${campusName}</span>
+                                    <span class="spot-occupancy ${occupancyClass}">
+                                        <i class="fas ${occupancyIcon}"></i> ${occupancyText}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="spot-body">
+                                <div class="spot-description">${spot.description}</div>
+                                <div class="spot-amenities">
+                                    ${amenitiesHtml}
+                                </div>
+                            </div>
+                            <div class="spot-footer">
+                                <div class="spot-stats">
+                                    <div class="spot-stat">
+                                        <i class="fas fa-map-marker-alt"></i> ${spot.check_ins || 0}
+                                    </div>
+                                    <div class="spot-stat">
+                                        <i class="fas fa-star"></i> ${spot.rating?.toFixed(1) || 'N/A'}
+                                    </div>
+                                </div>
+                                ${spot.verified ? '<span class="verified-badge"><i class="fas fa-check"></i> Verified</span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                spotContainer.innerHTML = html;
+                
+                document.querySelectorAll('.spot-card').forEach(card => {
+                    // Regular click for details
+                    card.addEventListener('click', () => {
+                        const spotId = card.dataset.id;
+                        openSpotDetail(spotId);
+                    });
+                    
+                    // Right-click for context menu
+                    card.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        
+                        // Set active spot ID
+                        window.activeSpotId = card.dataset.id;
+                        window.activeSpotCard = card;
+                        
+                        // Get the spot data
+                        const spotIndex = studySpots.findIndex(s => s._id === card.dataset.id);
+                        if (spotIndex !== -1) {
+                            window.activeSpot = studySpots[spotIndex];
+                        }
+                        
+                        // Position and show context menu
+                        const contextMenu = document.getElementById('spotContextMenu');
+                        
+                        // Position relative to cursor
+                        const x = e.clientX;
+                        const y = e.clientY + window.scrollY;
+                        
+                        // Adjust position to ensure menu stays in viewport
+                        const menuWidth = 180;  // Approximate width
+                        const menuHeight = 120; // Approximate height
+                        
+                        let posX = x;
+                        let posY = y;
+                        
+                        // Adjust horizontally if needed
+                        if (posX + menuWidth > window.innerWidth) {
+                            posX = window.innerWidth - menuWidth - 10;
+                        }
+                        
+                        // Adjust vertically if needed
+                        if (posY + menuHeight > window.innerHeight + window.scrollY) {
+                            posY = posY - menuHeight;
+                        }
+                        
+                        contextMenu.style.left = `${posX}px`;
+                        contextMenu.style.top = `${posY}px`;
+                        contextMenu.classList.add('show');
+                        
+                        // Add a class to the card to highlight it
+                        card.classList.add('active-context');
+                    });
+                    
+                    // For mobile: long-press for context menu
+                    let longPressTimer;
+                    
+                    card.addEventListener('touchstart', (e) => {
+                        longPressTimer = setTimeout(() => {
+                            // Set active spot ID
+                            window.activeSpotId = card.dataset.id;
+                            window.activeSpotCard = card;
+                            
+                            // Get the spot data
+                            const spotIndex = studySpots.findIndex(s => s._id === card.dataset.id);
+                            if (spotIndex !== -1) {
+                                window.activeSpot = studySpots[spotIndex];
+                            }
+                            
+                            // Position and show context menu
+                            const contextMenu = document.getElementById('spotContextMenu');
+                            
+                            // Position relative to card
+                            const rect = card.getBoundingClientRect();
+                            
+                            contextMenu.style.left = `${rect.left + 10}px`;
+                            contextMenu.style.top = `${rect.top + rect.height/2 + window.scrollY}px`;
+                            contextMenu.classList.add('show');
+                            
+                            // Add a class to the card to highlight it
+                            card.classList.add('active-context');
+                            
+                            // Prevent default touch behavior
+                            e.preventDefault();
+                        }, 800); // 800ms for long press
+                    });
+                    
+                    card.addEventListener('touchend', () => {
+                        clearTimeout(longPressTimer);
+                    });
+                    
+                    card.addEventListener('touchmove', () => {
+                        clearTimeout(longPressTimer);
+                    });
+                });
+            };
+            
+            // Add spots to map
+            const addSpotsToMap = (spots) => {
+                spots.forEach(spot => {
+                    if (spot.coordinates && spot.coordinates.length === 2) {
+                        // Get coordinates
+                        const lng = spot.coordinates[0];
+                        const lat = spot.coordinates[1];
+                        
+                        // Create marker with custom icon based on occupancy
+                        let markerColor = '#4caf50'; // Green for low occupancy
+                        if (spot.occupancy_level === 'medium') {
+                            markerColor = '#ffc107'; // Amber for medium
+                        } else if (spot.occupancy_level === 'high') {
+                            markerColor = '#f44336'; // Red for high
+                        }
+                        
+                        const markerIcon = L.divIcon({
+                            html: `<i class="fas fa-map-marker-alt" style="color: ${markerColor}; font-size: 24px;"></i>`,
+                            className: 'spot-marker',
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 24]
+                        });
+                        
+                        const marker = L.marker([lat, lng], {
+                            icon: markerIcon
+                        }).addTo(map);
+                        
+                        // Add popup with basic info
+                        marker.bindPopup(`
+                            <strong>${spot.name}</strong><br>
+                            ${spot.address}<br>
+                            <em>Click for details</em>
+                        `);
+                        
+                        // Add click handler to open spot details
+                        marker.on('click', () => {
+                            openSpotDetail(spot._id);
+                        });
+                        
+                        // Store marker for later reference
+                        markers.push(marker);
+                    }
+                });
+            };
+            
+            // Set up pagination
+            // Replace the existing setupPagination function
+            const setupPagination = (total, currentPage, totalPages) => {
+                // Clear previous pagination
+                paginationContainer.innerHTML = '';
+                
+                // Don't show pagination if there's only one page
+                if (totalPages <= 1) {
+                    return;
+                }
+                
+                // If current page is beyond available pages, adjust it
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                    // Re-fetch data with corrected page
+                    loadStudySpots();
+                    return;
+                }
+                
+                // Create pagination buttons
+                let html = '';
+                
+                // Previous button
+                html += `
+                    <button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                            ${currentPage === 1 ? 'disabled' : `data-page="${currentPage - 1}"`}>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+                
+                // Page buttons
+                const maxButtons = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage + 1 < maxButtons) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                            ${i}
+                        </button>
+                    `;
+                }
+                
+                // Next button
+                html += `
+                    <button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}"
+                            ${currentPage === totalPages ? 'disabled' : `data-page="${currentPage + 1}"`}>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+                
+                paginationContainer.innerHTML = html;
+                
+                // Add click events to pagination buttons
+                document.querySelectorAll('.page-btn:not(.disabled):not(.active)').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (btn.hasAttribute('data-page')) {
+                            const pageNum = parseInt(btn.dataset.page);
+                            if (!isNaN(pageNum)) {
+                                currentPage = pageNum;
+                                console.log("Changing to page:", currentPage);
+                                loadStudySpots();
+                                
+                                // Smooth scroll to top
+                                window.scrollTo({
+                                    top: 0,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        }
+                    });
+                });
+            };
+            
+            // Open study spot detail view
+            const openSpotDetail = (spotId) => {
+                // Show loading state
+                spotDetailContent.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                // Show modal
+                spotDetailModal.classList.add('show');
+                
+                // Find spot data from our loaded spots
+                const spot = studySpots.find(s => s._id === spotId);
+                
+                if (spot) {
+                    // We have the data locally, display it
+                    displaySpotDetail(spot);
+                } else {
+                    // Fetch the data from the server
+                    fetch(`/api/studyspots/${spotId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                currentSpot = data.spot;
+                                displaySpotDetail(currentSpot);
+                            } else {
+                                console.error('Failed to load spot details:', data.message);
+                                spotDetailContent.innerHTML = `
+                                    <div class="no-results">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <p>Failed to load spot details. Please try again later.</p>
+                                    </div>
+                                `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading spot details:', error);
+                            spotDetailContent.innerHTML = `
+                                <div class="no-results">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <p>Error loading spot details. Please try again later.</p>
+                                </div>
+                            `;
+                        });
+                }
+            };
+            
+            // Display study spot details
+            const displaySpotDetail = (spot) => {
+                currentSpot = spot;
+                
+                // Get amenities that are true
+                const amenitiesMap = {
+                    wifi: {name: 'Wi-Fi', icon: 'fa-wifi'},
+                    outlets: {name: 'Power Outlets', icon: 'fa-plug'},
+                    quiet: {name: 'Quiet Environment', icon: 'fa-volume-mute'},
+                    group_friendly: {name: 'Group Friendly', icon: 'fa-users'},
+                    food_allowed: {name: 'Food Allowed', icon: 'fa-utensils'},
+                    computers: {name: 'Computers', icon: 'fa-desktop'},
+                    printing: {name: 'Printing', icon: 'fa-print'},
+                    whiteboard: {name: 'Whiteboards', icon: 'fa-chalkboard'},
+                    natural_light: {name: 'Natural Light', icon: 'fa-sun'}
+                };
+                
+                // Build amenities HTML
+                let amenitiesHtml = '';
+                for (const [key, value] of Object.entries(spot.amenities)) {
+                    if (value === true) {
+                        amenitiesHtml += `
+                            <div class="amenity-item">
+                                <div class="amenity-icon">
+                                    <i class="fas ${amenitiesMap[key].icon}"></i>
+                                </div>
+                                <div class="amenity-name">${amenitiesMap[key].name}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Build gallery HTML
+                let galleryHtml = '';
+                if (spot.photos && spot.photos.length > 0) {
+                    galleryHtml = `
+                        <div class="spot-gallery">
+                            <h3 class="gallery-title">Photos</h3>
+                            <div class="gallery-container">
+                                ${spot.photos.map(photo => `
+                                    <div class="gallery-item" style="background-image: url('${photo}')"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Build reviews HTML
+                let reviewsHtml = '';
+                if (spot.reviews && spot.reviews.length > 0) {
+                    reviewsHtml = `
+                        <div class="review-section">
+                            <div class="review-header">
+                                <h3 class="review-title">Reviews</h3>
+                                <span class="review-count">${spot.reviews.length} review${spot.reviews.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="review-list">
+                                ${spot.reviews.map(review => `
+                                    <div class="review-item">
+                                        <div class="review-meta">
+                                            <div class="review-author">
+                                                <span>${review.author.username}</span>
+                                            </div>
+                                            <span class="review-date">${formatDate(review.created_at)}</span>
+                                        </div>
+                                        <div class="review-content">${review.content}</div>
+                                        <div class="review-rating">
+                                            ${Array(review.rating).fill('<i class="fas fa-star"></i>').join('')}
+                                            ${Array(5 - review.rating).fill('<i class="far fa-star"></i>').join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Build campus label
+                let campusName = 'Unknown Campus';
+                if (spot.campus === 'main') campusName = 'Main Campus';
+                if (spot.campus === 'kengeri') campusName = 'Kengeri Campus';
+                if (spot.campus === 'bgr') campusName = 'BGR Campus';
+                if (spot.campus === 'lavasa') campusName = 'Lavasa Campus';
+                if (spot.campus === 'delhi') campusName = 'Delhi NCR Campus';
+                if (spot.campus === 'yeshwanthpur') campusName = 'Yeshwanthpur Campus';
+                if (spot.campus === 'off-campus') campusName = 'Off Campus';
+                
+                // Build HTML for details
+                const html = `
+                    <div class="spot-detail-header">
+                        <h3 class="spot-detail-title">${spot.name}</h3>
+                        <div class="spot-detail-meta">
+                            <div class="spot-creator">
+                                <span>Added by ${spot.creator?.username || 'Unknown'}</span>
+                                ${spot.verified ? '<span class="verified-badge"><i class="fas fa-check"></i> Verified</span>' : ''}
+                            </div>
+                            <div class="spot-stats">
+                                <div class="spot-stat">
+                                    <i class="fas fa-map-marker-alt"></i> ${spot.check_ins || 0} check-ins
+                                </div>
+                                <div class="spot-stat">
+                                    <i class="fas fa-star"></i> ${spot.rating?.toFixed(1) || 'N/A'} rating
+                                </div>
+                            </div>
+                        </div>
+                        <div class="spot-detail-location">
+                            <i class="fas fa-map-marker-alt"></i> ${spot.address}
+                            <span>(${campusName})</span>
+                        </div>
+                    </div>
+                    
+                    <div class="spot-detail-description">
+                        ${spot.description}
+                    </div>
+                    
+                    <div class="spot-actions">
+                        <button class="action-btn checkin-btn" id="checkinBtn">
+                            <i class="fas fa-sign-in-alt"></i> Check In
+                        </button>
+                        <button class="action-btn report-btn" id="reportOccupancyBtn">
+                            <i class="fas fa-users"></i> Report Occupancy
+                        </button>
+                        <button class="action-btn directions-btn" id="directionsBtn">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </button>
+                    </div>
+                    
+                    <div class="occupancy-section">
+                        <h3 class="occupancy-title">Current Occupancy</h3>
+                        <div class="occupancy-options">
+                            <div class="occupancy-option option-low ${spot.occupancy_level === 'low' ? 'selected' : ''}" data-occupancy="low">
+                                <i class="fas fa-user"></i> Low (Not Busy)
+                            </div>
+                            <div class="occupancy-option option-medium ${spot.occupancy_level === 'medium' ? 'selected' : ''}" data-occupancy="medium">
+                                <i class="fas fa-users"></i> Medium
+                            </div>
+                            <div class="occupancy-option option-high ${spot.occupancy_level === 'high' ? 'selected' : ''}" data-occupancy="high">
+                                <i class="fas fa-users-cog"></i> High (Busy)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="spot-detail-amenities">
+                        <h3 class="amenities-title">Available Amenities</h3>
+                        <div class="amenities-list">
+                            ${amenitiesHtml}
+                        </div>
+                    </div>
+                    
+                    ${galleryHtml}
+                    
+                    ${reviewsHtml}
+                `;
+                
+                spotDetailContent.innerHTML = html;
+                
+                // Add event listeners
+                document.getElementById('checkinBtn').addEventListener('click', () => {
+                    openCheckinModal(spot);
+                });
+                
+                document.getElementById('reportOccupancyBtn').addEventListener('click', () => {
+                    // Show occupancy options for selection
+                    document.querySelectorAll('.occupancy-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            const occupancy = option.dataset.occupancy;
+                            reportOccupancy(spot._id, occupancy);
+                        });
+                    });
+                });
+                
+                document.getElementById('directionsBtn').addEventListener('click', () => {
+                    if (spot.coordinates && spot.coordinates.length === 2) {
+                        const lat = spot.coordinates[1];
+                        const lng = spot.coordinates[0];
+                        // Open Google Maps directions in a new tab
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+                    } else {
+                        showFeedback('Location coordinates not available for directions.', 'error');
+                    }
+                });
+            };
+            
+            // Open check-in modal
+            const openCheckinModal = (spot) => {
+                // Set spot name in modal
+                checkinSpotName.textContent = spot.name;
+                
+                // Reset occupancy selection
+                selectedOccupancy = null;
+                document.querySelectorAll('#checkinModal .occupancy-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Show modal
+                checkinModal.classList.add('show');
+                
+                // Add click handlers for occupancy options
+                document.querySelectorAll('#checkinModal .occupancy-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        // Remove selected class from all options
+                        document.querySelectorAll('#checkinModal .occupancy-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Add selected class to clicked option
+                        option.classList.add('selected');
+                        
+                        // Store selected occupancy
+                        selectedOccupancy = option.dataset.occupancy;
+                    });
+                });
+            };
+            
+            // Submit check-in
+            const submitCheckin = (e) => {
+                e.preventDefault();
+                
+                if (!currentSpot) {
+                    showFeedback('No spot selected for check-in.', 'error');
+                    return;
+                }
+                
+                if (!selectedOccupancy) {
+                    showFeedback('Please select current occupancy level.', 'warning');
+                    return;
+                }
+                
+                const duration = document.getElementById('stayDuration').value;
+                
+                // Prepare data for API
+                const checkInData = {
+                    spot_id: currentSpot._id,
+                    duration: parseInt(duration),
+                    occupancy_level: selectedOccupancy
+                };
+                
+                // Submit to API
+                fetch('/api/studyspots/checkin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(checkInData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        checkinModal.classList.remove('show');
+                        
+                        // Show success message
+                        showFeedback('Check-in successful!', 'success');
+                        
+                        // Update spot data if available
+                        if (data.spot) {
+                            // Find spot in our list and update it
+                            const spotIndex = studySpots.findIndex(s => s._id === data.spot._id);
+                            if (spotIndex >= 0) {
+                                studySpots[spotIndex] = data.spot;
+                            }
+                            
+                            // Update current spot
+                            if (currentSpot && currentSpot._id === data.spot._id) {
+                                currentSpot = data.spot;
+                                
+                                // Update detail view if open
+                                if (spotDetailModal.classList.contains('show')) {
+                                    displaySpotDetail(currentSpot);
+                                }
+                            }
+                            
+                            // Update displayed spots
+                            displayStudySpots(studySpots);
+                            
+                            // Update map markers
+                            if (markers.length > 0) {
+                                markers.forEach(marker => map.removeLayer(marker));
+                                markers = [];
+                            }
+                            addSpotsToMap(studySpots);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Failed to check in');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking in:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Report occupancy
+            const reportOccupancy = (spotId, occupancyLevel) => {
+                // Prepare data for API
+                const occupancyData = {
+                    spot_id: spotId,
+                    occupancy_level: occupancyLevel
+                };
+                
+                // Submit to API
+                fetch('/api/studyspots/occupancy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(occupancyData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showFeedback('Occupancy report submitted!', 'success');
+                        
+                        // Update spot data if available
+                        if (data.spot) {
+                            // Find spot in our list and update it
+                            const spotIndex = studySpots.findIndex(s => s._id === data.spot._id);
+                            if (spotIndex >= 0) {
+                                studySpots[spotIndex] = data.spot;
+                            }
+                            
+                            // Update current spot
+                            if (currentSpot && currentSpot._id === data.spot._id) {
+                                currentSpot = data.spot;
+                                
+                                // Update detail view if open
+                                if (spotDetailModal.classList.contains('show')) {
+                                    displaySpotDetail(currentSpot);
+                                }
+                            }
+                            
+                            // Update displayed spots
+                            displayStudySpots(studySpots);
+                            
+                            // Update map markers
+                            if (markers.length > 0) {
+                                markers.forEach(marker => map.removeLayer(marker));
+                                markers = [];
+                            }
+                            addSpotsToMap(studySpots);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Failed to report occupancy');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reporting occupancy:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Create a new study spot
+            const createStudySpot = (e) => {
+                e.preventDefault();
+                
+                // Get form values
+                const name = document.getElementById('spotName').value;
+                const address = document.getElementById('spotAddress').value;
+                const description = document.getElementById('spotDescription').value;
+                const campus = document.getElementById('spotCampus').value;
+                
+                // Validate inputs
+                if (!name || !address || !description || !campus) {
+                    showFeedback('Please fill in all required fields.', 'warning');
+                    return;
+                }
+                
+                // Get selected amenities
+                const selectedAmenities = {};
+                document.querySelectorAll('input[name="add_amenities"]:checked').forEach(checkbox => {
+                    selectedAmenities[checkbox.value] = true;
+                });
+                
+                // Prepare form data for upload with images
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('address', address);
+                formData.append('description', description);
+                formData.append('campus', campus);
+                
+                // Add amenities
+                formData.append('amenities', JSON.stringify(selectedAmenities));
+                
+                // Add coordinates if available from map selection
+                if (document.getElementById('spotLatitude') && document.getElementById('spotLongitude')) {
+                    const lat = document.getElementById('spotLatitude').value;
+                    const lng = document.getElementById('spotLongitude').value;
+                    if (lat && lng) {
+                        formData.append('latitude', lat);
+                        formData.append('longitude', lng);
+                    }
+                }
+                
+                // Add photos if selected
+                const photoFiles = document.getElementById('spotPhotos').files;
+                for (let i = 0; i < Math.min(photoFiles.length, 3); i++) {
+                    formData.append('photos', photoFiles[i]);
+                }
+                
+                // Submit to API
+                fetch('/api/studyspots', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        addSpotModal.classList.remove('show');
+                        
+                        // Show success message
+                        showFeedback('Study spot added successfully!', 'success');
+                        
+                        // Reload spots
+                        loadStudySpots();
+                        
+                        // Reset form
+                        addSpotForm.reset();
+                    } else {
+                        throw new Error(data.message || 'Failed to add study spot');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding study spot:', error);
+                    showFeedback(`Error: ${error.message}`, 'error');
+                });
+            };
+            
+            // Filter spots based on sidebar selections
+            const updateFilters = (element, filterType) => {
+                // Add active class to clicked item and remove from siblings
+                const parent = element.parentElement;
+                parent.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                element.classList.add('active');
+                
+                // Update filter state based on filter type
+                switch(filterType) {
+                    case 'campus':
+                        currentCampus = element.dataset.campus;
+                        break;
+                    case 'distance':
+                        currentDistance = element.dataset.distance;
+                        break;
+                    case 'occupancy':
+                        currentOccupancy = element.dataset.occupancy;
+                        break;
+                    case 'activity':
+                        currentActivity = element.dataset.activity;
+                        break;
+                }
+                
+                // Reset to first page and reload spots
+                currentPage = 1;
+                loadStudySpots();
+            };
+            
+            // Initialize map and pin selection map
+            const initPinLocationMap = () => {
+                // Create map in the pin location div
+                if (!window.pinMap) {
+                    window.pinMap = L.map('pinLocationMap').setView([12.9344, 77.6069], 13);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(window.pinMap);
+                    
+                    // Add hidden inputs for coordinates
+                    const latInput = document.createElement('input');
+                    latInput.type = 'hidden';
+                    latInput.id = 'spotLatitude';
+                    document.getElementById('addSpotForm').appendChild(latInput);
+                    
+                    const lngInput = document.createElement('input');
+                    lngInput.type = 'hidden';
+                    lngInput.id = 'spotLongitude';
+                    document.getElementById('addSpotForm').appendChild(lngInput);
+                    
+                    // Add click handler
+                    window.pinMap.on('click', function(e) {
+                        document.getElementById('spotLatitude').value = e.latlng.lat;
+                        document.getElementById('spotLongitude').value = e.latlng.lng;
+                        
+                        // Update or add marker
+                        if (window.locationMarker) {
+                            window.locationMarker.setLatLng(e.latlng);
+                        } else {
+                            window.locationMarker = L.marker(e.latlng).addTo(window.pinMap);
+                        }
+                    });
+                }
+            };
+            
+            // Event Listeners
+            
+            // Add spot button
+            addSpotBtn.addEventListener('click', () => {
+                addSpotModal.classList.add('show');
+                setTimeout(() => {
+                    initPinLocationMap();
+                    if (window.pinMap) {
+                        window.pinMap.invalidateSize();
+                        
+                        // If we have user position, center map there
+                        if (userPosition) {
+                            window.pinMap.setView([userPosition.lat, userPosition.lng], 14);
+                        }
+                    }
+                }, 300);
+            });
+            
+            // Close add modal
+            closeAddModal.addEventListener('click', () => {
+                addSpotModal.classList.remove('show');
+            });
+            
+            // Cancel add button
+            cancelAddBtn.addEventListener('click', () => {
+                addSpotModal.classList.remove('show');
+            });
+            
+            // Close detail modal
+            closeDetailModal.addEventListener('click', () => {
+                spotDetailModal.classList.remove('show');
+            });
+            
+            // Close checkin modal
+            closeCheckinModal.addEventListener('click', () => {
+                checkinModal.classList.remove('show');
+            });
+            
+            // Cancel checkin button
+            cancelCheckinBtn.addEventListener('click', () => {
+                checkinModal.classList.remove('show');
+            });
+            
+            // Close modals when clicking outside
+            addSpotModal.addEventListener('click', (e) => {
+                if (e.target === addSpotModal) {
+                    addSpotModal.classList.remove('show');
+                }
+            });
+            
+            spotDetailModal.addEventListener('click', (e) => {
+                if (e.target === spotDetailModal) {
+                    spotDetailModal.classList.remove('show');
+                }
+            });
+            
+            checkinModal.addEventListener('click', (e) => {
+                if (e.target === checkinModal) {
+                    checkinModal.classList.remove('show');
+                }
+            });
+            
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    addSpotModal.classList.remove('show');
+                    spotDetailModal.classList.remove('show');
+                    checkinModal.classList.remove('show');
+                }
+            });
+            
+            // Add event listeners to forms
+            addSpotForm.addEventListener('submit', createStudySpot);
+            checkinForm.addEventListener('submit', submitCheckin);
+            
+            // Search input
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    currentSearch = searchInput.value.trim();
+                    currentPage = 1;
+                    loadStudySpots();
+                }
+            });
+            
+            // Sort select
+            sortSelect.addEventListener('change', () => {
+                currentSort = sortSelect.value;
+                currentPage = 1;
+                loadStudySpots();
+            });
+            
+            // Sidebar filter clicks
+
+// Campus filter
+            document.querySelectorAll('.sidebar-menu-item[data-campus]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all campus items
+                    document.querySelectorAll('.sidebar-menu-item[data-campus]').forEach(campusItem => {
+                        campusItem.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Update current campus
+                    currentCampus = item.dataset.campus;
+                    console.log("Changed campus filter to:", currentCampus);
+                    
+                    // Reset to first page when changing filters
+                    currentPage = 1;
+                    
+                    // Reload spots with new filter
+                    loadStudySpots();
+                });
+            });
+
+            // Distance filter
+            document.querySelectorAll('.sidebar-menu-item[data-distance]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all distance items
+                    document.querySelectorAll('.sidebar-menu-item[data-distance]').forEach(distItem => {
+                        distItem.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Update current distance
+                    currentDistance = item.dataset.distance;
+                    console.log("Changed distance filter to:", currentDistance);
+                    
+                    // Reset to first page when changing filters
+                    currentPage = 1;
+                    
+                    // Reload spots with new filter
+                    loadStudySpots();
+                });
+            });
+
+            // Occupancy filter
+            document.querySelectorAll('.sidebar-menu-item[data-occupancy]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all occupancy items
+                    document.querySelectorAll('.sidebar-menu-item[data-occupancy]').forEach(occItem => {
+                        occItem.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Update current occupancy
+                    currentOccupancy = item.dataset.occupancy;
+                    console.log("Changed occupancy filter to:", currentOccupancy);
+                    
+                    // Reset to first page when changing filters
+                    currentPage = 1;
+                    
+                    // Reload spots with new filter
+                    loadStudySpots();
+                });
+            });
+
+            // Activity filter
+            document.querySelectorAll('.sidebar-menu-item[data-activity]').forEach(item => {
+                item.addEventListener('click', () => {
+                    // If already active, deactivate
+                    if (item.classList.contains('active')) {
+                        item.classList.remove('active');
+                        currentActivity = null;
+                    } else {
+                        // Remove active class from all activity items
+                        document.querySelectorAll('.sidebar-menu-item[data-activity]').forEach(actItem => {
+                            actItem.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked item
+                        item.classList.add('active');
+                        
+                        // Update current activity
+                        currentActivity = item.dataset.activity;
+                    }
+                    
+                    console.log("Changed activity filter to:", currentActivity);
+                    
+                    // Reset to first page when changing filters
+                    currentPage = 1;
+                    
+                    // Reload spots with new filter
+                    loadStudySpots();
+                });
+            });
+
+            // Clear Filters button
+            document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                // Reset all filters to default
+                currentCampus = 'all';
+                currentDistance = 'any';
+                currentOccupancy = 'any';
+                currentActivity = null;
+                currentPage = 1;
+                selectedAmenities = [];
+                
+                // Reset search input
+                document.getElementById('searchInput').value = '';
+                currentSearch = '';
+                
+                // Reset sort select
+                document.getElementById('sortSelect').value = 'distance';
+                currentSort = 'distance';
+                
+                // Remove active class from all filter items
+                document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to default filters
+                document.querySelector('.sidebar-menu-item[data-campus="all"]').classList.add('active');
+                document.querySelector('.sidebar-menu-item[data-distance="any"]').classList.add('active');
+                document.querySelector('.sidebar-menu-item[data-occupancy="any"]').classList.add('active');
+                
+                // Uncheck all amenity checkboxes
+                document.querySelectorAll('input[name="amenities"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Show feedback
+                showFeedback("All filters cleared", "success");
+                
+                // Reload spots with reset filters
+                loadStudySpots();
+            });
+            
+            document.querySelectorAll('.sidebar-menu-item[data-distance]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'distance'));
+            });
+            
+            document.querySelectorAll('.sidebar-menu-item[data-occupancy]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'occupancy'));
+            });
+            
+            document.querySelectorAll('.sidebar-menu-item[data-activity]').forEach(item => {
+                item.addEventListener('click', () => updateFilters(item, 'activity'));
+            });
+            
+            // Amenity checkboxes
+            document.querySelectorAll('input[name="amenities"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    // Update selected amenities array
+                    selectedAmenities = [];
+                    document.querySelectorAll('input[name="amenities"]:checked').forEach(checked => {
+                        selectedAmenities.push(checked.value);
+                    });
+                    
+                    // Reload spots
+                    currentPage = 1;
+                    loadStudySpots();
+                });
+            });
+            
+            // Initialize application
+            initContextMenu();
+            loadUserData();
+        });
+    </script>
+    <div class="context-menu" id="spotContextMenu">
+        <div class="context-menu-item" id="showOnMapMenuItem">
+            <i class="fas fa-map-marker-alt"></i> Show on Map
+        </div>
+        <div class="context-menu-item" id="checkInMenuItem">
+            <i class="fas fa-sign-in-alt"></i> Check In
+        </div>
+        <div class="context-menu-item" id="viewDetailsMenuItem">
+            <i class="fas fa-info-circle"></i> View Details
+        </div>
+    </div>
+</body>
+</html>

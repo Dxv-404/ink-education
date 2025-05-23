@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK | Loading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Press+Start+2P&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink-black: #000000;
+            --ink-white: #ffffff;
+            --ink-purple: #7b3eab;
+            --ink-blue: #3f51b5;
+            --ink-green: #4caf50;
+            --pixel-size: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--ink-black);
+            color: var(--ink-white);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .loading-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .loading-message {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        .gif-container {
+            width: 300px;
+            height: 300px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--ink-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .gif-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-top: 1.5rem;
+            position: relative;
+            
+            /* Pixel-like effect */
+            clip-path: polygon(
+                0 0, 
+                calc(100% - var(--pixel-size)) 0, 
+                100% var(--pixel-size), 
+                100% 100%, 
+                var(--pixel-size) 100%, 
+                0 calc(100% - var(--pixel-size))
+            );
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--ink-white);
+            transition: width 0.5s ease-in-out;
+        }
+
+        .pixel-heart {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 2px;
+        }
+
+        .heart-pixel {
+            width: 100%;
+            height: 100%;
+            background: var(--ink-white);
+            animation: pixel-pulse 2s infinite;
+        }
+
+        .ink-title {
+            font-family: 'Staatliches', cursive;
+            font-size: 4rem;
+            letter-spacing: 10px;
+            margin-bottom: 2rem;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes pixel-pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px var(--ink-white), 0 0 10px var(--ink-white); }
+            to { text-shadow: 0 0 10px var(--ink-white), 0 0 20px var(--ink-purple); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fadeOut {
+            animation: fadeOut 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="pixel-heart" id="pixelHeart"></div>
+    
+    <div class="loading-container">
+        <h1 class="ink-title">INK</h1>
+        <div class="loading-message" id="loadingMessage"></div>
+        
+        <div class="gif-container">
+            <img id="loadingGif" src="" alt="Loading Animation">
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <script>
+        // Create Pixel Heart
+        const createPixelHeart = () => {
+            const heartPattern = [
+                [0, 1, 0, 1, 0],
+                [1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 0],
+                [0, 0, 1, 0, 0]
+            ];
+            
+            const pixelHeart = document.getElementById('pixelHeart');
+            
+            heartPattern.forEach((row, rowIndex) => {
+                row.forEach((col, colIndex) => {
+                    if (col) {
+                        const div = document.createElement('div');
+                        div.className = 'heart-pixel';
+                        div.style.gridRow = rowIndex + 1;
+                        div.style.gridColumn = colIndex + 1;
+                        pixelHeart.appendChild(div);
+                    }
+                });
+            });
+        };
+
+        // Loading messages
+        const loadingMessages = [
+            "Website loading... our hamsters are running as fast as they can!",
+            "Just a moment while we dust off the pixels...",
+            "Loading INK... we promise it's worth the wait (mostly)",
+            "Brewing your digital workspace with extra pixels...",
+            "Please wait while we optimize your procrastination tools..."
+        ];
+
+        // Loading GIFs - replace these URLs with your actual GIF paths
+        const loadingGifs = [
+            "/static/assets/loading/loading1.gif",
+            "/static/assets/loading/loading2.gif",
+            "/static/assets/loading/loading3.gif",
+            "/static/assets/loading/loading4.gif"
+        ];
+
+        // Get previously shown GIF from localStorage
+        const getLastShownGif = () => {
+            return localStorage.getItem('lastShownGif') || '';
+        };
+
+        // Set the last shown GIF in localStorage
+        const setLastShownGif = (gifUrl) => {
+            localStorage.setItem('lastShownGif', gifUrl);
+        };
+
+        // Select a random GIF that wasn't shown last time
+        const selectRandomGif = () => {
+            const lastGif = getLastShownGif();
+            let availableGifs = loadingGifs.filter(gif => gif !== lastGif);
+            
+            // If all GIFs have been shown, reset
+            if (availableGifs.length === 0) {
+                availableGifs = loadingGifs;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableGifs.length);
+            const selectedGif = availableGifs[randomIndex];
+            
+            setLastShownGif(selectedGif);
+            return selectedGif;
+        };
+
+        // Select a random loading message
+        const selectRandomMessage = () => {
+            const randomIndex = Math.floor(Math.random() * loadingMessages.length);
+            return loadingMessages[randomIndex];
+        };
+
+        // Update progress bar with small "jumps" for natural feel
+        const updateProgress = (targetProgress, currentProgress = 0, duration = 1000) => {
+            const progressBar = document.getElementById('progressBar');
+            const startTime = Date.now();
+            const startProgress = currentProgress;
+            
+            const animate = () => {
+                // Calculate progress based on time
+                const elapsed = Date.now() - startTime;
+                let progress = startProgress + ((targetProgress - startProgress) * (elapsed / duration));
+                
+                // Add small random jumps
+                if (Math.random() > 0.9 && progress < targetProgress - 5) {
+                    progress += Math.random() * 5;
+                }
+                
+                // Ensure we don't exceed target
+                progress = Math.min(progress, targetProgress);
+                
+                // Update progress bar
+                progressBar.style.width = `${progress}%`;
+                
+                // Continue animation or finish
+                if (progress < targetProgress && elapsed < duration) {
+                    requestAnimationFrame(animate);
+                } else {
+                    progressBar.style.width = `${targetProgress}%`;
+                    
+                    // If we've reached 100%, prepare to redirect
+                    if (targetProgress >= 100) {
+                        setTimeout(() => {
+                            document.body.classList.add('fadeOut');
+                            setTimeout(() => {
+                                window.location.href = '/landing';
+                            }, 1000);
+                        }, 500);
+                    }
+                }
+            };
+            
+            requestAnimationFrame(animate);
+            return targetProgress;
+        };
+
+        // Initialize everything
+        window.addEventListener('DOMContentLoaded', () => {
+            createPixelHeart();
+            
+            // Set loading message
+            const loadingMessage = document.getElementById('loadingMessage');
+            loadingMessage.textContent = selectRandomMessage();
+            
+            // Set loading GIF
+            const loadingGif = document.getElementById('loadingGif');
+            const selectedGif = selectRandomGif();
+            loadingGif.src = selectedGif;
+            
+            // Track GIF loop count and update progress accordingly
+            let loopCount = 0;
+            let currentProgress = 0;
+            
+            // Update progress as GIF plays
+            loadingGif.addEventListener('load', () => {
+                // Start with initial progress
+                currentProgress = updateProgress(10, currentProgress, 500);
+                
+                // Set up a timer to simulate GIF progress
+                // Most GIFs are 2-5 seconds for a loop, we'll use 3 seconds as a general estimate
+                const gifDuration = 3000;
+                
+                // Simulate first GIF loop progress
+                setTimeout(() => {
+                    if (loopCount === 0) {
+                        loopCount++;
+                        currentProgress = updateProgress(50, currentProgress, 1000);
+                    }
+                }, gifDuration);
+                
+                // Simulate second GIF loop progress and redirect
+                setTimeout(() => {
+                    if (loopCount === 1) {
+                        currentProgress = updateProgress(100, currentProgress, 1000);
+                    }
+                }, gifDuration * 2);
+            });
+            
+            // Fallback: If GIF doesn't trigger events properly, redirect after 10 seconds
+            setTimeout(() => {
+                if (currentProgress < 100) {
+                    updateProgress(100, currentProgress, 500);
+                }
+            }, 10000);
+        });
+    </script>
+</body>
+</html>
