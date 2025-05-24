@@ -1,7 +1,7 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/pixel-heart.png" width="40px"/>
+  <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-heart.png" width="40px"/>
   <br>INK: The Pixel-Perfect Learning Operating System<br>
-  <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/pixel-heart.png" width="40px"/>
+  <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-heart.png" width="40px"/>
 </h1>
 
 <p align="center">
@@ -9,24 +9,24 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/ink-header-banner.gif" width="100%" alt="INK Banner"/>
+  <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/ink-header-banner.gif" width="100%" alt="INK Banner"/>
 </p>
 
 <p align="center">
   <a href="https://github.com/Dxv-404/INK">
     <img alt="Stars" src="https://img.shields.io/github/stars/Dxv-404/INK?style=flat-square&color=7b3eab" />
   </a>
-  <a href="https://github.com/Dxv-404/INK/issues">
+  <a href="https://github.com/Dxv-404/ink-education/issues">
     <img alt="Issues" src="https://img.shields.io/github/issues/Dxv-404/INK?style=flat-square&color=ff5722" />
   </a>
-  <a href="https://github.com/Dxv-404/INK/blob/main/LICENSE">
+  <a href="https://github.com/Dxv-404/ink-education/blob/main/LICENSE">
     <img alt="License" src="https://img.shields.io/github/license/Dxv-404/INK?style=flat-square&color=4caf50" />
   </a>
 </p>
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/icons/pixel-book.png" width="20"/> What is INK?
+## <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-book.png" width="40"/>&nbsp;What is INK?
 
 **INK** is a full-stack web platform crafted for students who want to combine aesthetics with function. It’s not just a dashboard or a marketplace — it’s an **academic OS** where learning becomes interactive, productive, and personal.
 
@@ -52,15 +52,15 @@
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/pixel-map.png" width="20"/> Screenshots
+## <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-map.png" width="40"/> Screenshots
 
 | Dashboard | Bounty Board | Marketplace | Study Spot Finder |
 |----------|--------------|-------------|-------------------|
-| ![](https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/screens/dashboard.png) | ![](https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/screens/bounty.gif) | ![](https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/screens/marketplace.png) | ![](https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/screens/studyspot.gif) |
+| ![](https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/screens/dashboard.png) | ![](https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/screens/bounty.gif) | ![](https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/screens/marketplace.png) | ![](https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/screens/studyspot.gif) |
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/pixel-wrench.png" width="20"/> Tech Stack
+## <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-wrench.png" width="40"/> Tech Stack
 
 | Layer    | Technology |
 |----------|-------------|
@@ -73,7 +73,7 @@
 
 ---
 
-## ## <img src="https://raw.githubusercontent.com/Dxv-404/INK/main/static/assets/pixel-doc.png" width="20"/> Installation and Setup
+## <img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/pixel-doc.png" width="40"/> Installation and Setup
 
 ```bash
 # 1. Clone the game 
