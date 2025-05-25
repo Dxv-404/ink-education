@@ -106,7 +106,7 @@ A gamified Q&A board where students post doubts and solve problems for coins —
 ### Marketplace  
 Exchange notes, templates, services, and study guides. Each listing includes a preview, seller avatar, price in coins, and tag filters.
 
-<img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/marketplace.gif" width="100%"/>
+<img src="https://raw.githubusercontent.com/Dxv-404/ink-education/main/static/assets/marketplacee.gif" width="100%"/>
 
 ---
 
