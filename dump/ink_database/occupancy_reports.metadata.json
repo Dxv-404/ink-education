@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"f2e0ec139c5e40a8bd5238a81f4870e9","collectionName":"occupancy_reports","type":"collection"}

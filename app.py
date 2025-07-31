@@ -18,7 +18,8 @@ import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import random
-import string 
+import string
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -66,8 +67,8 @@ cred = credentials.Certificate('serviceAccountKey.json')
 firebase_admin.initialize_app(cred)
 
 # MongoDB Setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["ink_database"]
+client = MongoClient(os.environ.get("MONGO_URI"))
+db = client["ink-education"]
 users_collection = db["users"]
 widgets_collection = db["widgets"]
 calendar_events_collection = db["calendar_events"]
