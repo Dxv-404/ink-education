@@ -68,7 +68,7 @@ firebase_admin.initialize_app(cred)
 
 # MongoDB Setup
 client = MongoClient(os.environ.get("MONGO_URI"))
-db = client["ink-education"]
+db = client["ink_database"]
 users_collection = db["users"]
 widgets_collection = db["widgets"]
 calendar_events_collection = db["calendar_events"]
