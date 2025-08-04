@@ -22,7 +22,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import random
 import string
-from dotenv import load_dotenv
+
+load_dotenv()
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -66,9 +68,13 @@ def check_session():
             print(f"Error restoring session: {str(e)}")
 
 # Firebase Admin Initialization
-cred_path= os.getenv('SERVICE_ACCOUNT_KEY_PATH')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
+service_account_json = os.getenv("SERVICE_ACCOUNT_JSON")
+key_path = "serviceAccountKey.json"  # Same directory as app.py
+if service_account_json and not os.path.exists(key_path):
+    with open(key_path, "w") as f:
+        f.write(service_account_json)
+cred = credentials.Certificate(key_path)
+initialize_app(cred)
 
 # MongoDB Setup
 client = MongoClient(os.environ.get("MONGO_URI"))
