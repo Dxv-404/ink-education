@@ -66,7 +66,8 @@ def check_session():
             print(f"Error restoring session: {str(e)}")
 
 # Firebase Admin Initialization
-cred = credentials.Certificate('SERVICE_ACCOUNT_KEY_PATH')
+cred_path= os.environ.get('SERVICE_ACCOUNT_KEY_PATH')
+cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
 
 # MongoDB Setup
