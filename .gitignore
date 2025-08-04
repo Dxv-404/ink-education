@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# VSCode settings
+.vscode/
+.idea/
+
+# Node.js / Firebase frontend
+node_modules/
+firebase.js
+firebase.config.js
+firebase.json
+firestore.indexes.json
+firestore.rules
+serviceAccountKey.json
+
+# Byte-compiled and cache
+*.pyo
+*.pyd
+.Python
+*.sqlite3
+instance/
+.pytest_cache/
+.coverage
+.tox/
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Flask DBs and configs
+*.db
+*.bak
+*.swp
+
+# System
+.DS_Store
+Thumbs.db

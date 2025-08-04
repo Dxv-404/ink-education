@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+import os
+from dotenv import load_dotenv
+from firebase_admin import credentials, initialize_app
 from flask import send_from_directory
 from pymongo import MongoClient 
 import firebase_admin
@@ -63,7 +66,7 @@ def check_session():
             print(f"Error restoring session: {str(e)}")
 
 # Firebase Admin Initialization
-cred = credentials.Certificate('serviceAccountKey.json')
+cred = credentials.Certificate('SERVICE_ACCOUNT_KEY_PATH')
 firebase_admin.initialize_app(cred)
 
 # MongoDB Setup
@@ -84,17 +87,17 @@ if 'username_1' not in users_collection.index_information():
     users_collection.create_index([("username", 1)], unique=True)
 
 # GitHub OAuth Settings
-GITHUB_CLIENT_ID = 'Ov23lia7qa6NQ5JMCnni'
-GITHUB_CLIENT_SECRET = '5911513c3094044079f96adadbf0f4ab04f70448'
-GITHUB_REDIRECT_URI = 'http://localhost:5000/github-callback'
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID"),
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET"),
+GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI")
 
 # Spotify API Settings
-SPOTIFY_CLIENT_ID = 'a4e7a4e363a2452f89d0508972a8de20'
-SPOTIFY_CLIENT_SECRET = '1cad1fccf34a44029c38744b3a06acc9'
-SPOTIFY_REDIRECT_URI = 'http://127.0.0.1:5000/spotify'
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URI =  os.getenv("SPOTIFY_REDIRECT_URI")
 
 # Firebase API Key
-FIREBASE_API_KEY = "AIzaSyDEN8QcSiao1sTFX1-8uyViDZOiCkNGyo8"
+FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")
 
 # Utility - Email Validation
 def is_valid_email(email):

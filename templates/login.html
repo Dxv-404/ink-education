@@ -13,6 +13,7 @@
   <!-- Import Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="{{ url_for('static', filename='firebaseConfig.js') }}"></script>
 
   <style>
     * {
@@ -468,19 +469,10 @@
 
 
   // Initialize Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDEN8QcSiao1sTFX1-8uyViDZOiCkNGyo8",
-    authDomain: "ink-education-ce9a9.firebaseapp.com",
-    projectId: "ink-education-ce9a9",
-    storageBucket: "ink-education-ce9a9.appspot.com",
-    messagingSenderId: "586546230544",
-    appId: "1:586546230544:web:690d451105f1a10e416195",
-    measurementId: "G-2S2CP72FSV"
-  };
 
-  firebase.initializeApp(firebaseConfig);
 
-  // Handle Google Login
+  firebase.initializeApp(window.firebaseConfig);
+
   // Handle Google Login
   async function handleGoogleLogin() {
     var provider = new firebase.auth.GoogleAuthProvider();
