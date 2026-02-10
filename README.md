@@ -5,7 +5,7 @@
 </h1>
 
 <p align="center">
-  <i>A retro-inspired academic toolkit reimagined for the modern student. Blending gamified productivity with pixel-art aesthetics and community learning — all in one vibrant ecosystem.</i>
+  <i>A retro-inspired academic toolkit reimagined for the modern student. Blending gamified productivity with pixel-art aesthetics and community learning, an all in one vibrant ecosystem.</i>
 </p>
 
 <p align="center">
